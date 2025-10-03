@@ -1,3 +1,6 @@
+@import "@blocknote/core/fonts/inter.css";
+@import "@blocknote/shadcn/style.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -57,3 +60,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Re-enable pointer events for BlockNote’s side-menu icon */
+.bn-side-menu svg { pointer-events: auto !important; }
+
+/* Ensure the handle itself can initiate drag */
+.bn-side-menu [data-drag-handle],
+.bn-side-menu button,
+.bn-side-menu [role="button"] {
+  pointer-events: auto !important;
+  cursor: grab; /* visual hint */
+}
+.bn-side-menu [data-drag-handle]:active { cursor: grabbing; }
+
+
+.bn-container { overflow: visible !important; } /* so drop cursor / drag ghost aren’t clipped */
+.bn-side-menu, .bn-dropdown, .bn-floating-toolbar { z-index: 60 !important; }

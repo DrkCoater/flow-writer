@@ -1,13 +1,24 @@
-import { Button } from "@/components/ui/button";
+import { useCreateBlockNote } from "@blocknote/react";
+import { BlockNoteView } from "@blocknote/shadcn";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 function App() {
+  const editor = useCreateBlockNote();
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <div className="absolute right-4 top-4">
+    <div className="relative w-full h-screen">
+      <div className="absolute right-4 top-4 z-[99]">
         <ThemeToggle />
       </div>
-      <Button>Hello World</Button>
+      <div className="relative overflow-visible">
+        <BlockNoteView
+          editor={editor}
+          className="h-full"
+          slashMenu
+          formattingToolbar
+
+        />
+      </div>
     </div>
   );
 }

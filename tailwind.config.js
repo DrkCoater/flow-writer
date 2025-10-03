@@ -4,6 +4,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@blocknote/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
