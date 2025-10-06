@@ -1,14 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Theme, Button, Flex, Heading } from '@radix-ui/themes';
 
 function App() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <div className="absolute right-4 top-4">
-        <ThemeToggle />
-      </div>
-      <Button>Hello World</Button>
-    </div>
+    <Theme>
+      <Flex direction="column" align="center" justify="center" gap="4" style={{ minHeight: '100vh' }}>
+        <Heading size="8">Flow Writer</Heading>
+        <Button size="3">Get Started</Button>
+      </Flex>
+    </Theme>
   );
 }
 
