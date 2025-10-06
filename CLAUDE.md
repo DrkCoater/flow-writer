@@ -20,3 +20,5 @@ src/
 - Never use any emoji nor unicode characters in any form of writing, ascii characters only
 - Test dev server before declaring task complete
 - Verify no console errors in both Vite and Tauri outputs
+
+# Frontend design document
