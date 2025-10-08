@@ -1,4 +1,5 @@
-import { Button, Flex, Tabs, Tooltip, IconButton } from "@radix-ui/themes";
+import { useState } from "react";
+import { Button, Flex, Tabs, Tooltip, IconButton, DropdownMenu, TextField } from "@radix-ui/themes";
 import { PlayIcon, Pencil1Icon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@radix-ui/react-icons";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
@@ -19,6 +20,18 @@ export function MarkdownBlock({
   isFirst,
   isLast
 }) {
+  const [showCustomAsk, setShowCustomAsk] = useState(false);
+  const [customQuery, setCustomQuery] = useState("");
+
+  const handleReviseAction = (action) => {
+    if (action === "custom-ask") {
+      setShowCustomAsk(true);
+    } else {
+      setShowCustomAsk(false);
+      console.log("Revise action:", action);
+    }
+  };
+
   return (
     <div className="block-container">
       <Tabs.Root
@@ -76,14 +89,36 @@ export function MarkdownBlock({
         </Tabs.Content>
       </Tabs.Root>
 
-      <div className="action-buttons">
-        <Button size="1" variant="soft">
-          Revise
-        </Button>
+      <Flex className="action-buttons" gap="2" align="center">
+        {showCustomAsk && (
+          <TextField.Root
+            size="1"
+            placeholder="Enter your custom question..."
+            value={customQuery}
+            onChange={(e) => setCustomQuery(e.target.value)}
+            style={{ flex: 1 }}
+          />
+        )}
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <Button size="1" variant="soft">
+              Revise
+              <DropdownMenu.TriggerIcon />
+            </Button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Item onSelect={() => handleReviseAction("rewrite")}>Rewrite</DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => handleReviseAction("rephrase")}>Rephrase</DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => handleReviseAction("more-formal")}>More formal</DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => handleReviseAction("more-fun")}>More fun</DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item onSelect={() => handleReviseAction("custom-ask")}>Custom Ask</DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
         <Button size="1" variant="soft">
           <PlayIcon />
         </Button>
-      </div>
+      </Flex>
     </div>
   );
 }
