@@ -6,7 +6,7 @@ function App() {
   const [blocks, setBlocks] = useState([
     {
       id: 1,
-      content: '# Welcome to Flow Writer\n\nThis is a block-based markdown editor.',
+      content: '# This is a block-based markdown editor.',
       isRendered: true
     },
     {
@@ -79,7 +79,6 @@ function App() {
   return (
     <Theme appearance="dark">
       <Flex direction="column" align="center" gap="4" style={{ minHeight: '100vh', padding: '40px' }}>
-        <Heading size="8">Flow Writer</Heading>
 
         <div style={{ width: '100%', maxWidth: '900px' }}>
           {blocks.map((block, index) => (
