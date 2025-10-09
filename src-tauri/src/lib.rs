@@ -1,3 +1,11 @@
+pub mod error;
+pub mod models;
+pub mod parsers;
+pub mod processors;
+pub mod services;
+
+use error::ContextError;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
