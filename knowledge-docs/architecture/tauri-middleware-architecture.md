@@ -108,11 +108,11 @@ XML Input (with CDATA sections)
 ▼                                ▼
 Sections Path                Flow Graph Path
     ↓                            ↓
-Extract type != "flow"      Extract type == "flow"
+Extract <sections>          Extract <flow> (top-level)
     ↓                            ↓
-Section Structs             CDATA Content
+Section Structs             Flow Element
     ↓                            ↓
-Resolve Variables           Extract Mermaid Code
+Resolve Variables           Extract <diagram> CDATA
     ↓                            ↓
 JSON Response               Parse Mermaid Syntax
 (sections array)                 ↓
@@ -123,6 +123,68 @@ JSON Response               Parse Mermaid Syntax
                             JSON Response
                             (flowGraph object)
 ```
+
+## XML Document Structure
+
+The XML document has the following top-level structure:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<context version="1.0">
+  <meta>
+    <!-- Document metadata -->
+    <title>...</title>
+    <author>...</author>
+    <created>...</created>
+    <app name="..." version="..."/>
+    <tags>...</tags>
+    <description>...</description>
+  </meta>
+
+  <variables>
+    <!-- Variable definitions for ${varName} substitution -->
+    <var name="userName">Jeremy</var>
+    <var name="goal">Ship the v1 Context Editor</var>
+    ...
+  </variables>
+
+  <sections>
+    <!-- Content sections - parsed synchronously -->
+    <section id="intent-1" type="intent">
+      <content><![CDATA[
+        # Markdown content here
+      ]]></content>
+    </section>
+
+    <section id="proc-1" type="process">
+      <content><![CDATA[...]]></content>
+
+      <!-- Nested sections supported -->
+      <section id="alts-1" type="alternatives">
+        <content><![CDATA[...]]></content>
+      </section>
+    </section>
+  </sections>
+
+  <!-- Flow graph - parsed asynchronously (top-level, NOT inside <sections>) -->
+  <flow id="flow-1" version="1.0">
+    <title>Document Flow</title>
+    <diagram><![CDATA[
+```mermaid
+flowchart TD
+  A[Intent] --> B[Evaluation]
+  click A "#intent-1" "Jump to Intent"
+```
+    ]]></diagram>
+  </flow>
+</context>
+```
+
+**Key Points:**
+- `<flow>` is a **sibling** to `<sections>`, not a child
+- Flow uses `<diagram>` tag, sections use `<content>` tag
+- No need to filter section types - all sections are content sections
+- Flow element has `id`, `version`, and optional `title` attributes
 
 ## Module Breakdown
 
@@ -185,6 +247,8 @@ pub struct Section {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FlowGraph {
     pub id: String,
+    pub version: String,
+    pub title: Option<String>,
     pub mermaid_code: String,
     pub parsed_graph: GraphStructure,
     pub node_refs: Vec<NodeReference>,
@@ -255,13 +319,15 @@ pub struct NodeReference {
 pub fn parse_xml(xml_content: &str) -> Result<ContextDocument, ParseError>
 pub fn extract_meta(root: &XmlNode) -> Result<MetaData, ParseError>
 pub fn extract_variables(root: &XmlNode) -> Result<Vec<Variable>, ParseError>
-pub fn extract_all_sections(root: &XmlNode) -> Result<(Vec<Section>, Option<FlowGraph>), ParseError>
+pub fn extract_sections(root: &XmlNode) -> Result<Vec<Section>, ParseError>
+pub fn extract_flow(root: &XmlNode) -> Result<Option<FlowGraph>, ParseError>
 ```
 
 **Strategy**:
 - Use `quick-xml` for fast XML parsing
 - Handle CDATA sections properly
-- Separate sections from flow graph during initial parse
+- Parse `<flow>` as top-level element (sibling to `<sections>`, not child)
+- Parse `<sections>` separately (no flow type filtering needed)
 - Preserve nested section hierarchy
 
 #### parsers/section_parser.rs
@@ -275,13 +341,7 @@ pub fn parse_nested_sections(parent: &XmlNode) -> Result<Vec<Section>, ParseErro
 pub fn extract_cdata_content(node: &XmlNode) -> Result<String, ParseError>
 ```
 
-**Filtering Logic**:
-```rust
-// Only parse sections where type != "flow"
-pub fn is_content_section(section_type: &str) -> bool {
-    section_type != "flow"
-}
-```
+**Note**: No filtering needed - all elements under `<sections>` are content sections. The `<flow>` element is parsed separately as a top-level element.
 
 #### parsers/mermaid_parser.rs
 
@@ -298,8 +358,8 @@ pub fn parse_click_actions(code: &str) -> Result<Vec<NodeReference>, ParseError>
 
 **Parsing Strategy**:
 ```rust
-// Extract mermaid code from markdown code block
-let mermaid_code = extract_mermaid_from_cdata(cdata_content)?;
+// Extract mermaid code from <diagram> CDATA block (not <content>)
+let mermaid_code = extract_mermaid_from_cdata(diagram_cdata)?;
 
 // Parse flowchart declaration (direction is always TD, not stored)
 // flowchart TD
@@ -440,11 +500,11 @@ impl FlowGraphService {
         // 1. Read XML asynchronously
         let xml = tokio::fs::read_to_string(path).await?;
 
-        // 2. Extract flow section
-        let flow_section = self.extract_flow_section(&xml)?;
+        // 2. Extract flow element (top-level <flow> element)
+        let flow_element = self.extract_flow_element(&xml)?;
 
-        // 3. Extract mermaid code from CDATA
-        let mermaid_code = extract_mermaid_from_cdata(&flow_section.content)?;
+        // 3. Extract mermaid code from <diagram> CDATA
+        let mermaid_code = extract_mermaid_from_cdata(&flow_element.diagram)?;
 
         // 4. Parse graph structure (CPU-intensive, use spawn_blocking)
         let graph_structure = tokio::task::spawn_blocking(move || {
@@ -453,7 +513,9 @@ impl FlowGraphService {
 
         // 5. Build complete flow graph
         let flow_graph = FlowGraph {
-            id: flow_section.id,
+            id: flow_element.id,
+            version: flow_element.version,
+            title: flow_element.title,
             mermaid_code: mermaid_code.clone(),
             parsed_graph: graph_structure.clone(),
             node_refs: build_node_references(&graph_structure),
@@ -473,6 +535,8 @@ impl FlowGraphService {
 
         let flow_graph = FlowGraph {
             id: "flow-1".to_string(),
+            version: "1.0".to_string(),
+            title: None,
             mermaid_code: new_code,
             parsed_graph: graph_structure.clone(),
             node_refs: build_node_references(&graph_structure),
@@ -561,10 +625,8 @@ fn load_sections(
     let doc = xml_parser::parse_xml(&xml_content)
         .map_err(|e| format!("Failed to parse XML: {}", e))?;
 
-    // Filter sections (exclude flow)
-    let sections: Vec<Section> = doc.sections.into_iter()
-        .filter(|s| s.section_type != "flow")
-        .collect();
+    // Sections are already separate from flow (no filtering needed)
+    let sections = doc.sections;
 
     // Resolve variables
     let var_map = build_variable_map(&doc.variables);
@@ -745,7 +807,9 @@ thiserror = "1.0"
 {
   "flowGraph": {
     "id": "flow-1",
-    "mermaidCode": "flowchart TD\n  A[Intent] --> B[Evaluation]\n  B --> C[Process]\n  C -->|Alt A| D[Alternative A]\n  C -->|Alt B| E[Alternative B]\n  click A \"#intent-1\" \"Jump to Intent\"\n  click B \"#eval-1\" \"Jump to Evaluation\"\n  click C \"#proc-1\" \"Jump to Process\"",
+    "version": "1.0",
+    "title": "Document Flow",
+    "mermaidCode": "flowchart TD\n  A[Intent] --> B[Evaluation]\n  B --> C[Process]\n  C -->|Alt A| D[Alternative A]\n  C -->|Alt B| E[Alternative B]\n  click A \"#intent-1\" \"Jump to Intent\"\n  click B \"#eval-1\" \"Jump to Evaluation\"\n  click C \"#proc-1\" \"Jump to Process\"\n  click D \"#alts-1\" \"Jump to Alternatives\"\n  click E \"#alts-1\" \"Jump to Alternatives\"",
     "parsedGraph": {
       "nodes": [
         {
@@ -820,6 +884,18 @@ thiserror = "1.0"
         "sectionId": "proc-1",
         "clickAction": "#proc-1",
         "tooltip": "Jump to Process"
+      },
+      {
+        "nodeId": "D",
+        "sectionId": "alts-1",
+        "clickAction": "#alts-1",
+        "tooltip": "Jump to Alternatives"
+      },
+      {
+        "nodeId": "E",
+        "sectionId": "alts-1",
+        "clickAction": "#alts-1",
+        "tooltip": "Jump to Alternatives"
       }
     ]
   }
@@ -1251,8 +1327,12 @@ src-tauri/
 
 ## Design Notes
 
-1. **Direction Field Omitted**: Flow direction is always top-down (TD), so we don't store it
-2. **Separate Threads**: Sections use sync ops, flow graph uses async for responsiveness
-3. **Frontend Rendering**: Mermaid rendering happens in frontend with mermaid.js
-4. **Validation**: Backend validates structure, frontend shows errors
-5. **Caching**: Flow graph cached after parsing to improve performance
+1. **Flow as Top-Level Element**: `<flow>` is a sibling to `<sections>`, not a child, representing the global document flow
+2. **Diagram vs Content Tags**: Flow uses `<diagram>` tag instead of `<content>` to distinguish from section content
+3. **Direction Field Omitted**: Flow direction is always top-down (TD), so we don't store it
+4. **No Section Type Filtering**: Since `<flow>` is separate, no need to filter `type="flow"` from sections
+5. **Separate Threads**: Sections use sync ops, flow graph uses async for responsiveness
+6. **Frontend Rendering**: Mermaid rendering happens in frontend with mermaid.js
+7. **Validation**: Backend validates structure, frontend shows errors
+8. **Caching**: Flow graph cached after parsing to improve performance
+9. **Flow Metadata**: Flow element includes `version` and optional `title` attributes

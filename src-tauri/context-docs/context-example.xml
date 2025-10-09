@@ -30,7 +30,7 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 **Out of scope (v1):**
 - Multi-user real-time collaboration
 - TypeScript types (JavaScript-only project)
-      ]]></content>
+]]></content>
     </section>
 
     <!-- Evaluation -->
@@ -46,7 +46,7 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 - [ ] Evaluation metrics are computable
 - [ ] Process covers critical steps
 - [ ] At least two Alternatives considered
-      ]]></content>
+]]></content>
     </section>
 
     <!-- Process with nested Alternatives -->
@@ -60,15 +60,15 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 4. **Add AI actions per block** (revise, tone, grammar, query)
 5. **Add progress tracking stepper**
 6. **Render flow diagram**
-      ]]></content>
+]]></content>
 
       <section id="alts-1" type="alternatives">
         <content><![CDATA[
 ### Alternatives (nested under Process)
-- **A.** Zustand store (light, modular)  
+- **A.** Zustand store (light, modular)
 - **B.** Jotai atoms (granular, atomic)
 - **C.** Redux Toolkit (mature, centralized)
-        ]]></content>
+]]></content>
       </section>
     </section>
 
@@ -78,19 +78,36 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
         <content><![CDATA[
 You are a senior context engineer. Help the user achieve **${goal}** by **${deadline}**.
 Ensure outputs are measurable against the success criteria in *Evaluation*.
-        ]]></content>
+]]></content>
       </section>
 
       <section id="usr-1" type="user-prompt">
         <content><![CDATA[
 Please review my current **Process** for **${goal}** and suggest two **Alternatives** that reduce time-to-first-value.
-        ]]></content>
+]]></content>
       </section>
     </section>
 
-    <!-- Mermaid Flow (embedded inside Markdown) -->
-    <section id="flow-1" type="flow">
+    <!-- Optional: Free-form notes -->
+    <section id="notes-1" type="notes">
       <content><![CDATA[
+## Notes
+- The editor treats each `<section>` as a block tied to a Markdown body.
+- Variables like `${goal}` are resolved at render-time in preview/export.
+- The `<flow>` element represents the global document flow diagram.
+
+### Embedded XML Example (as code in Markdown)
+```xml
+<note priority="high">Resolve variables before markdown render.</note>
+```
+]]></content>
+    </section>
+  </sections>
+
+  <!-- Flow Graph - Separate top-level element -->
+  <flow id="flow-1" version="1.0">
+    <title>Document Flow</title>
+    <diagram><![CDATA[
 ```mermaid
 flowchart TD
   A[Intent] --> B[Evaluation]
@@ -100,22 +117,9 @@ flowchart TD
   click A "#intent-1" "Jump to Intent"
   click B "#eval-1" "Jump to Evaluation"
   click C "#proc-1" "Jump to Process"
+  click D "#alts-1" "Jump to Alternatives"
+  click E "#alts-1" "Jump to Alternatives"
 ```
-      ]]></content>
-    </section>
-
-    <!-- Optional: Free-form notes with embedded XML sample inside Markdown -->
-    <section id="notes-1" type="notes">
-      <content><![CDATA[
-## Notes
-- The editor should treat each `<section>` as a block tied to a Markdown body.
-- Variables like `${goal}` are resolved at render-time in preview/export.
-
-### Embedded XML Example (as code in Markdown)
-```xml
-<note priority="high">Resolve variables before markdown render.</note>
-```
-      ]]></content>
-    </section>
-  </sections>
+]]></diagram>
+  </flow>
 </context>
