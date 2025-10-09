@@ -4,19 +4,42 @@ pub mod parsers;
 pub mod processors;
 pub mod services;
 
-use error::ContextError;
+use models::{MetaData, Section, FlowGraph};
+use services::flow_service;
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+/// Load all sections from the context document
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+async fn load_sections(file_path: String) -> Result<Vec<Section>, String> {
+    flow_service::load_sections(&file_path)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Load the flow graph from the context document
+#[tauri::command]
+async fn load_flow_graph(file_path: String) -> Result<Option<FlowGraph>, String> {
+    flow_service::load_flow_graph(&file_path)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Load metadata from the context document
+#[tauri::command]
+async fn load_metadata(file_path: String) -> Result<MetaData, String> {
+    flow_service::load_metadata(&file_path)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            load_sections,
+            load_flow_graph,
+            load_metadata
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
