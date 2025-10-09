@@ -25,3 +25,9 @@ This project follows Test-Driven Development practices:
 - Place integration tests in `src-tauri/tests/` directory
 - Use `cargo test` to run all tests
 - Use `cargo test --test integration_test` to run specific integration tests
+
+
+### Frontend Development
+- Always use `pnpm` rather than `npm`
+- Use **JavaScript/JSX** (not TypeScript) for React components
+- Follow functional components with hooks pattern
