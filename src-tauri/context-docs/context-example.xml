@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<context version="1.0">
+  <meta>
+    <title>Context Engineering Canvas — Example</title>
+    <author>Example Author</author>
+    <created>2025-10-09T20:20:32.902425+00:00</created>
+    <app name="CEC" version="0.1.0"/>
+    <tags>context, engineering, markdown, xml, mermaid</tags>
+    <description>Minimal XML wrapper with Markdown content and Mermaid flow, designed for a JS/React editor.</description>
+  </meta>
+
+  <variables>
+    <var name="userName">Jeremy</var>
+    <var name="goal">Ship the v1 Context Editor</var>
+    <var name="deadline">2025-11-01</var>
+    <var name="qualityThreshold">85%</var>
+  </variables>
+
+  <sections>
+    <!-- Intent -->
+    <section id="intent-1" type="intent">
+      <content><![CDATA[
+# Intent
+We aim to **${goal}** by **${deadline}** for **${userName}**.
+
+**Why now?**
+- Consolidate context engineering practices into one workspace.
+- Enable per-block AI actions (revise, tone, grammar, query).
+
+**Out of scope (v1):**
+- Multi-user real-time collaboration
+- TypeScript types (JavaScript-only project)
+      ]]></content>
+    </section>
+
+    <!-- Evaluation -->
+    <section id="eval-1" type="evaluation">
+      <content><![CDATA[
+## Success Criteria
+- End-to-end flow from **Intent → Evaluation → Process → Alternatives** is captured.
+- Measurable outcome: Onboarding completion **≥ ${qualityThreshold}** within 30 days of v1 launch.
+- Review checklist complete (Intent clarity, Criteria testability, Process coverage, Alternatives explored).
+
+### Acceptance Checks
+- [ ] Intent statement is specific and time-bound
+- [ ] Evaluation metrics are computable
+- [ ] Process covers critical steps
+- [ ] At least two Alternatives considered
+      ]]></content>
+    </section>
+
+    <!-- Process with nested Alternatives -->
+    <section id="proc-1" type="process" refTarget="intent-1 eval-1">
+      <content><![CDATA[
+## Process
+1. **Audit current authoring UX**
+2. **Implement editor blocks**
+   - CodeMirror (Markdown), per-block controls (Radix Popover/Dropdown)
+3. **Wire XML↔MD loader/saver**
+4. **Add AI actions per block** (revise, tone, grammar, query)
+5. **Add progress tracking stepper**
+6. **Render flow diagram**
+      ]]></content>
+
+      <section id="alts-1" type="alternatives">
+        <content><![CDATA[
+### Alternatives (nested under Process)
+- **A.** Zustand store (light, modular)  
+- **B.** Jotai atoms (granular, atomic)
+- **C.** Redux Toolkit (mature, centralized)
+        ]]></content>
+      </section>
+    </section>
+
+    <!-- Prompts (system/user) demonstrating variables -->
+    <section id="prompts-1" type="prompts">
+      <section id="sys-1" type="system-prompt">
+        <content><![CDATA[
+You are a senior context engineer. Help the user achieve **${goal}** by **${deadline}**.
+Ensure outputs are measurable against the success criteria in *Evaluation*.
+        ]]></content>
+      </section>
+
+      <section id="usr-1" type="user-prompt">
+        <content><![CDATA[
+Please review my current **Process** for **${goal}** and suggest two **Alternatives** that reduce time-to-first-value.
+        ]]></content>
+      </section>
+    </section>
+
+    <!-- Mermaid Flow (embedded inside Markdown) -->
+    <section id="flow-1" type="flow">
+      <content><![CDATA[
+```mermaid
+flowchart TD
+  A[Intent] --> B[Evaluation]
+  B --> C[Process]
+  C -->|Alt A| D[Alternative A]
+  C -->|Alt B| E[Alternative B]
+  click A "#intent-1" "Jump to Intent"
+  click B "#eval-1" "Jump to Evaluation"
+  click C "#proc-1" "Jump to Process"
+```
+      ]]></content>
+    </section>
+
+    <!-- Optional: Free-form notes with embedded XML sample inside Markdown -->
+    <section id="notes-1" type="notes">
+      <content><![CDATA[
+## Notes
+- The editor should treat each `<section>` as a block tied to a Markdown body.
+- Variables like `${goal}` are resolved at render-time in preview/export.
+
+### Embedded XML Example (as code in Markdown)
+```xml
+<note priority="high">Resolve variables before markdown render.</note>
+```
+      ]]></content>
+    </section>
+  </sections>
+</context>
