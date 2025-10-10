@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { resolveResource } from '@tauri-apps/api/path';
 
 /**
  * Hook to load context document from hardcoded XML file
@@ -16,8 +17,8 @@ export function useContextDocument() {
       setError(null);
 
       try {
-        // Hardcoded file path for MVP
-        const filePath = 'src-tauri/context-docs/context-example.xml';
+        // Resolve the resource path to absolute path
+        const filePath = await resolveResource('context-docs/context-example.xml');
         const secs = await invoke('load_sections', { filePath });
         setSections(secs);
       } catch (err) {

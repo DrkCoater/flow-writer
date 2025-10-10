@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Button, Flex, Tabs, Tooltip, IconButton, DropdownMenu, TextField } from "@radix-ui/themes";
+import { Button, Flex, Tabs, Tooltip, IconButton, DropdownMenu, TextField, Badge } from "@radix-ui/themes";
 import { PlayIcon, Pencil1Icon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@radix-ui/react-icons";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { getSectionTypeColor, formatSectionType } from "../utils/sectionTransform";
 import "./MarkdownBlock.scss";
 
 export function MarkdownBlock({
@@ -18,7 +19,9 @@ export function MarkdownBlock({
   onMoveDown,
   onAddBelow,
   isFirst,
-  isLast
+  isLast,
+  sectionType,
+  sectionId
 }) {
   const [showCustomAsk, setShowCustomAsk] = useState(false);
   const [customQuery, setCustomQuery] = useState("");
@@ -43,10 +46,22 @@ export function MarkdownBlock({
         }}
       >
         <Flex justify="between" align="center">
-          <Tabs.List>
-            <Tabs.Trigger value="edit">Edit</Tabs.Trigger>
-            <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
-          </Tabs.List>
+          <Flex gap="2" align="center">
+            <Tabs.List>
+              <Tabs.Trigger value="edit">Edit</Tabs.Trigger>
+              <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
+            </Tabs.List>
+            {sectionType && (
+              <Badge color={getSectionTypeColor(sectionType)} size="1">
+                {formatSectionType(sectionType)}
+              </Badge>
+            )}
+            {sectionId && (
+              <span style={{ fontSize: '12px', color: 'var(--gray-10)', fontFamily: 'monospace' }}>
+                {sectionId}
+              </span>
+            )}
+          </Flex>
 
           <Flex gap="2">
             <Tooltip content="Add Block">

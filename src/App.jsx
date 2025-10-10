@@ -1,22 +1,24 @@
-import { Theme, Flex, Heading, Button } from '@radix-ui/themes';
-import { useState } from 'react';
+import { Theme, Flex, Heading, Button, Spinner, Callout } from '@radix-ui/themes';
+import { useState, useEffect } from 'react';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { MarkdownBlock } from './components/MarkdownBlock';
+import { useContextDocument } from './hooks/useContextDocument';
+import { sectionsToBlocks } from './utils/sectionTransform';
 
 function App() {
-  const [blocks, setBlocks] = useState([
-    {
-      id: 1,
-      content: '# This is a block-based markdown editor.',
-      isRendered: true
-    },
-    {
-      id: 2,
-      content: '## Features\n\n- Edit markdown block by block\n- Toggle between edit and preview mode\n- Add, delete, and reorder blocks\n- GitHub Flavored Markdown support',
-      isRendered: false
-    }
-  ]);
+  const { sections, loading, error } = useContextDocument();
+  const [blocks, setBlocks] = useState([]);
+  const [nextId, setNextId] = useState(1);
 
-  const [nextId, setNextId] = useState(3);
+  // Load sections from backend
+  useEffect(() => {
+    if (sections.length > 0) {
+      const transformedBlocks = sectionsToBlocks(sections);
+      setBlocks(transformedBlocks);
+      // Set nextId based on loaded sections (for new blocks)
+      setNextId(sections.length + 1);
+    }
+  }, [sections]);
 
   const handleContentChange = (id, newContent) => {
     setBlocks(blocks.map(block =>
@@ -57,9 +59,11 @@ function App() {
   const handleAddBelow = (id) => {
     const index = blocks.findIndex(block => block.id === id);
     const newBlock = {
-      id: nextId,
+      id: `new-${nextId}`,
       content: '# New Block\n\nStart editing here...',
-      isRendered: false
+      isRendered: false,
+      sectionId: `new-${nextId}`,
+      sectionType: 'notes'
     };
     const newBlocks = [...blocks];
     newBlocks.splice(index + 1, 0, newBlock);
@@ -69,9 +73,11 @@ function App() {
 
   const handleAddBlock = () => {
     setBlocks([...blocks, {
-      id: nextId,
+      id: `new-${nextId}`,
       content: '# New Block\n\nStart editing here...',
-      isRendered: false
+      isRendered: false,
+      sectionId: `new-${nextId}`,
+      sectionType: 'notes'
     }]);
     setNextId(nextId + 1);
   };
@@ -79,9 +85,33 @@ function App() {
   return (
     <Theme appearance="dark">
       <Flex direction="column" align="center" gap="4" style={{ minHeight: '100vh', padding: '40px' }}>
-
         <div style={{ width: '100%', maxWidth: '900px' }}>
-          {blocks.map((block, index) => (
+          {loading && (
+            <Flex justify="center" align="center" style={{ minHeight: '200px' }}>
+              <Spinner size="3" />
+            </Flex>
+          )}
+
+          {error && (
+            <Callout.Root color="red" style={{ marginBottom: '16px' }}>
+              <Callout.Icon>
+                <ExclamationTriangleIcon />
+              </Callout.Icon>
+              <Callout.Text>
+                <strong>Error loading document:</strong> {error}
+              </Callout.Text>
+            </Callout.Root>
+          )}
+
+          {!loading && !error && blocks.length === 0 && (
+            <Callout.Root style={{ marginBottom: '16px' }}>
+              <Callout.Text>
+                No sections loaded. Click "Add New Block" to start.
+              </Callout.Text>
+            </Callout.Root>
+          )}
+
+          {!loading && blocks.map((block, index) => (
             <MarkdownBlock
               key={block.id}
               id={block.id}
@@ -95,17 +125,21 @@ function App() {
               onAddBelow={handleAddBelow}
               isFirst={index === 0}
               isLast={index === blocks.length - 1}
+              sectionType={block.sectionType}
+              sectionId={block.sectionId}
             />
           ))}
 
-          <Button
-            size="3"
-            variant="soft"
-            style={{ width: '100%', marginTop: '16px' }}
-            onClick={handleAddBlock}
-          >
-            + Add New Block
-          </Button>
+          {!loading && (
+            <Button
+              size="3"
+              variant="soft"
+              style={{ width: '100%', marginTop: '16px' }}
+              onClick={handleAddBlock}
+            >
+              + Add New Block
+            </Button>
+          )}
         </div>
       </Flex>
     </Theme>
