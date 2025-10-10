@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+  <!--
+    Context Document XML Schema Definition (XSD)
+    Version: 2.0 (Flat Sections)
+
+    This schema validates context engineering documents with:
+    - Flat section structure (no nesting)
+    - Required metadata, variables, and sections
+    - Optional flow diagrams
+    - Enforced section types and unique IDs
+  -->
+
+  <!-- ========================================
+       ROOT ELEMENT
+       ======================================== -->
+
+  <xs:element name="context" type="ContextType">
+    <xs:annotation>
+      <xs:documentation>
+        Root element for context engineering documents.
+        Must contain metadata, variables, and sections.
+        Flow diagram is optional.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!-- ========================================
+       CONTEXT TYPE
+       ======================================== -->
+
+  <xs:complexType name="ContextType">
+    <xs:sequence>
+      <xs:element name="meta" type="MetaType"/>
+      <xs:element name="variables" type="VariablesType"/>
+      <xs:element name="sections" type="SectionsType"/>
+      <xs:element name="flow" type="FlowType" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="version" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Document format version (e.g., "1.0")
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ========================================
+       METADATA TYPES
+       ======================================== -->
+
+  <xs:complexType name="MetaType">
+    <xs:annotation>
+      <xs:documentation>
+        Document metadata including title, author, creation date,
+        application info, tags, and description.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="title" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Document title</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="author" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Document author name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="created" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>
+            Creation timestamp in ISO 8601 format
+            (e.g., "2025-10-09T20:20:32.902425+00:00")
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="app" type="AppInfoType">
+        <xs:annotation>
+          <xs:documentation>
+            Application that created/manages this document
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="tags" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            Comma-separated list of tags
+            (e.g., "context, engineering, markdown")
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="description" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Document description</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AppInfoType">
+    <xs:annotation>
+      <xs:documentation>
+        Application information (name and version)
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Application name (e.g., "CEC")</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="version" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Application version (e.g., "0.1.0")
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ========================================
+       VARIABLES TYPES
+       ======================================== -->
+
+  <xs:complexType name="VariablesType">
+    <xs:annotation>
+      <xs:documentation>
+        Container for document variables.
+        Variables can be referenced in content using ${varName} syntax.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="var" type="VarType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VarType">
+    <xs:annotation>
+      <xs:documentation>
+        A variable with name and value.
+        Example: &lt;var name="userName"&gt;Jeremy&lt;/var&gt;
+      </xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="name" type="xs:string" use="required">
+          <xs:annotation>
+            <xs:documentation>
+              Variable name (alphanumeric, underscores allowed)
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- ========================================
+       SECTIONS TYPES (FLAT ONLY)
+       ======================================== -->
+
+  <xs:complexType name="SectionsType">
+    <xs:annotation>
+      <xs:documentation>
+        Container for flat sections.
+        IMPORTANT: Section nesting is NOT allowed.
+        All sections must be direct children of this element.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="section" type="FlatSectionType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="FlatSectionType">
+    <xs:annotation>
+      <xs:documentation>
+        A flat section containing only content (no nested sections).
+        Each section represents a block in the editor.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="content" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            Markdown content for this section.
+            Typically wrapped in CDATA to preserve formatting.
+            Variables (${varName}) will be resolved at render time.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <!-- IMPORTANT: No nested section elements allowed -->
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Unique section identifier (e.g., "intent-1", "eval-1").
+          Must be unique across the entire document.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="SectionTypeEnum" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Section type from predefined list.
+          Determines section purpose and styling.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="refTarget" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          Optional space-separated list of referenced section IDs.
+          Example: "intent-1 eval-1"
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:simpleType name="SectionTypeEnum">
+    <xs:annotation>
+      <xs:documentation>
+        Allowed section types.
+        Each type has specific semantic meaning in context engineering.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="intent">
+        <xs:annotation>
+          <xs:documentation>
+            Intent section: Purpose and goals
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="evaluation">
+        <xs:annotation>
+          <xs:documentation>
+            Evaluation section: Success criteria and metrics
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="process">
+        <xs:annotation>
+          <xs:documentation>
+            Process section: Step-by-step procedures
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="alternatives">
+        <xs:annotation>
+          <xs:documentation>
+            Alternatives section: Different approaches or options
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ========================================
+       FLOW DIAGRAM TYPES
+       ======================================== -->
+
+  <xs:complexType name="FlowType">
+    <xs:annotation>
+      <xs:documentation>
+        Optional flow diagram using Mermaid syntax.
+        Represents the global document flow as a graph.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="title" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Optional flow diagram title
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="diagram" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            Mermaid flowchart code wrapped in markdown code block.
+            Example:
+            ```mermaid
+            flowchart TD
+              A[Intent] --> B[Evaluation]
+            ```
+
+            Should be wrapped in CDATA to preserve formatting.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Unique flow diagram identifier (e.g., "flow-1")
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="version" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Flow diagram format version (e.g., "1.0")
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+</xs:schema>

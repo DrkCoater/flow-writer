@@ -49,7 +49,7 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 ]]></content>
     </section>
 
-    <!-- Process with nested Alternatives -->
+    <!-- Process -->
     <section id="proc-1" type="process" refTarget="intent-1 eval-1">
       <content><![CDATA[
 ## Process
@@ -61,45 +61,15 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 5. **Add progress tracking stepper**
 6. **Render flow diagram**
 ]]></content>
+    </section>
 
-      <section id="alts-1" type="alternatives">
-        <content><![CDATA[
-### Alternatives (nested under Process)
+    <!-- Alternatives -->
+    <section id="alts-1" type="alternatives">
+      <content><![CDATA[
+## Alternatives
 - **A.** Zustand store (light, modular)
 - **B.** Jotai atoms (granular, atomic)
 - **C.** Redux Toolkit (mature, centralized)
-]]></content>
-      </section>
-    </section>
-
-    <!-- Prompts (system/user) demonstrating variables -->
-    <section id="prompts-1" type="prompts">
-      <section id="sys-1" type="system-prompt">
-        <content><![CDATA[
-You are a senior context engineer. Help the user achieve **${goal}** by **${deadline}**.
-Ensure outputs are measurable against the success criteria in *Evaluation*.
-]]></content>
-      </section>
-
-      <section id="usr-1" type="user-prompt">
-        <content><![CDATA[
-Please review my current **Process** for **${goal}** and suggest two **Alternatives** that reduce time-to-first-value.
-]]></content>
-      </section>
-    </section>
-
-    <!-- Optional: Free-form notes -->
-    <section id="notes-1" type="notes">
-      <content><![CDATA[
-## Notes
-- The editor treats each `<section>` as a block tied to a Markdown body.
-- Variables like `${goal}` are resolved at render-time in preview/export.
-- The `<flow>` element represents the global document flow diagram.
-
-### Embedded XML Example (as code in Markdown)
-```xml
-<note priority="high">Resolve variables before markdown render.</note>
-```
 ]]></content>
     </section>
   </sections>

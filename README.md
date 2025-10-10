@@ -7,10 +7,18 @@ A Tauri-based application for editing context engineering documents with XML str
 - **XML Document Parsing**: Parse context documents with meta, variables, sections, and flow graphs
 - **Variable Substitution**: Dynamic `${varName}` variable resolution throughout sections
 - **Mermaid Flow Diagrams**: Parse and render flowchart diagrams with click actions
-- **Nested Sections**: Support for hierarchical section structures
+- **Flat Section Structure**: Simple, non-nested section organization for clarity
 - **Async Processing**: Efficient async loading of documents and flow graphs
+- **Schema Validation**: XML Schema (XSD) validation for document integrity (planned)
 
 ## Architecture
+
+### Design Documentation
+
+- **[Frontend Architecture](knowledge-docs/architecture/frontend-md-section-block-architecture.md)** - React/CodeMirror integration (v2.0 - Flat sections)
+- **[XML Schema Validation](knowledge-docs/architecture/xml-schema-validation-design.md)** - Schema validation design
+- **[Tauri Middleware](knowledge-docs/architecture/tauri-middleware-architecture.md)** - Backend architecture
+- **[XML Schema (XSD)](knowledge-docs/schemas/context-document.xsd)** - Schema definition
 
 ### Backend (Rust/Tauri)
 
@@ -21,10 +29,11 @@ The backend is built with Rust and Tauri, providing fast, secure native capabili
 - **Processors**: Variable resolution and content processing
 - **Services**: Async document loading and processing services
 - **Tauri Commands**: Exposed APIs for frontend integration
+- **Validators**: XML schema validation (planned)
 
 ### Frontend (React)
 
-The frontend uses React with CodeMirror for editing markdown sections and rendering flow diagrams.
+The frontend uses React with CodeMirror for editing markdown sections with flat structure (no nesting).
 
 ## Setup
 

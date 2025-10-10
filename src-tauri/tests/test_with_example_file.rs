@@ -27,8 +27,8 @@ async fn test_context_example_xml() {
     let sections = flow_service::load_sections(file_path_str).await.unwrap();
     println!("\nSections loaded: {}", sections.len());
 
-    // Verify the structure - should have 5 top-level sections
-    assert_eq!(sections.len(), 5); // intent-1, eval-1, proc-1, prompts-1, notes-1
+    // Verify the structure - should have 4 flat sections (no nesting)
+    assert_eq!(sections.len(), 4); // intent-1, eval-1, proc-1, alts-1
 
     // Check that variables are resolved
     let intent_section = sections.iter().find(|s| s.id == "intent-1").unwrap();
@@ -39,11 +39,11 @@ async fn test_context_example_xml() {
     assert!(!intent_section.content.contains("${goal}"));
     println!("  Intent section: {} (variables resolved)", intent_section.id);
 
-    // Check process section with nested alternatives
-    let proc_section = sections.iter().find(|s| s.id == "proc-1").unwrap();
-    assert_eq!(proc_section.children.len(), 1);
-    assert_eq!(proc_section.children[0].id, "alts-1");
-    println!("  Process section: {} with {} children", proc_section.id, proc_section.children.len());
+    // Verify all sections are flat (no children)
+    for section in &sections {
+        assert_eq!(section.children.len(), 0, "Section {} should have no children", section.id);
+    }
+    println!("  All sections are flat (no nesting)");
 
     // Test 3: Load and process flow graph
     let flow_graph = flow_service::load_flow_graph(file_path_str).await.unwrap();
