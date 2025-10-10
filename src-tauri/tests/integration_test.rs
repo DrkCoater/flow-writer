@@ -38,15 +38,6 @@ Launch target: ${targetDate}
 - User acceptance testing
 - Security audit results
             ]]></content>
-            <section id="eval-metrics" type="metrics">
-                <content><![CDATA[
-## Key Metrics
-
-- Load time < 2s
-- Test coverage > 80%
-- Zero critical vulnerabilities
-                ]]></content>
-            </section>
         </section>
         <section id="process-1" type="process">
             <content><![CDATA[
@@ -104,11 +95,10 @@ flowchart TD
     assert!(intent_section.content.contains("2025-11-15"));
     assert!(!intent_section.content.contains("${productName}"));
 
-    // Check nested section structure
+    // Check flat section structure (no nesting)
     let eval_section = &sections[1];
     assert_eq!(eval_section.id, "evaluation-1");
-    assert_eq!(eval_section.children.len(), 1);
-    assert_eq!(eval_section.children[0].id, "eval-metrics");
+    assert_eq!(eval_section.children.len(), 0); // Flat structure - no children
 
     // Test 3: Load and process flow graph
     let flow_graph = flow_service::load_flow_graph(file_path).await.unwrap();
@@ -165,7 +155,7 @@ async fn test_document_without_flow() {
     </meta>
     <variables></variables>
     <sections>
-        <section id="section-1" type="content">
+        <section id="section-1" type="intent">
             <content><![CDATA[Simple content]]></content>
         </section>
     </sections>
@@ -183,7 +173,7 @@ async fn test_document_without_flow() {
     assert!(flow.is_none());
 }
 
-/// Test deeply nested sections
+/// Test that nested sections are properly rejected by schema validation
 #[tokio::test]
 async fn test_deeply_nested_sections() {
     let xml_content = r#"
@@ -194,22 +184,16 @@ async fn test_deeply_nested_sections() {
         <created>2025-10-09</created>
         <app name="CEC" version="0.1.0"/>
         <tags>nested</tags>
-        <description>Document with deeply nested sections</description>
+        <description>Document with nested sections (should be rejected)</description>
     </meta>
     <variables>
         <var name="level">Deep</var>
     </variables>
     <sections>
-        <section id="parent" type="parent">
+        <section id="parent" type="intent">
             <content><![CDATA[Parent: ${level}]]></content>
-            <section id="child-1" type="child">
+            <section id="child-1" type="evaluation">
                 <content><![CDATA[Child 1: ${level}]]></content>
-                <section id="grandchild" type="grandchild">
-                    <content><![CDATA[Grandchild: ${level}]]></content>
-                </section>
-            </section>
-            <section id="child-2" type="child">
-                <content><![CDATA[Child 2: ${level}]]></content>
             </section>
         </section>
     </sections>
@@ -220,31 +204,13 @@ async fn test_deeply_nested_sections() {
     temp_file.write_all(xml_content.as_bytes()).unwrap();
     let file_path = temp_file.path().to_str().unwrap();
 
-    let sections = flow_service::load_sections(file_path).await.unwrap();
+    // This should fail schema validation because of nested sections
+    let result = flow_service::load_sections(file_path).await;
+    assert!(result.is_err());
 
-    // Should have 1 parent section
-    assert_eq!(sections.len(), 1);
-    let parent = &sections[0];
-    assert_eq!(parent.id, "parent");
-    assert!(parent.content.contains("Deep"));
-
-    // Parent should have 2 children
-    assert_eq!(parent.children.len(), 2);
-
-    // First child should have 1 grandchild
-    let child_1 = &parent.children[0];
-    assert_eq!(child_1.id, "child-1");
-    assert!(child_1.content.contains("Deep"));
-    assert_eq!(child_1.children.len(), 1);
-
-    let grandchild = &child_1.children[0];
-    assert_eq!(grandchild.id, "grandchild");
-    assert!(grandchild.content.contains("Deep"));
-
-    // Second child should have no children
-    let child_2 = &parent.children[1];
-    assert_eq!(child_2.id, "child-2");
-    assert_eq!(child_2.children.len(), 0);
+    let err_msg = result.unwrap_err().to_string();
+    assert!(err_msg.contains("nested sections"));
+    assert!(err_msg.contains("Section nesting is not allowed"));
 }
 
 /// Test error handling for invalid XML

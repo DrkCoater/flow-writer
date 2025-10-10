@@ -3,6 +3,7 @@ pub mod models;
 pub mod parsers;
 pub mod processors;
 pub mod services;
+pub mod validators;
 
 use models::{MetaData, Section, FlowGraph};
 use services::flow_service;

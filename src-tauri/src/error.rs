@@ -23,6 +23,9 @@ pub enum ContextError {
     #[error("Graph validation error: {0}")]
     ValidationError(String),
 
+    #[error("Schema validation failed: {0}")]
+    SchemaValidationError(String),
+
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
 

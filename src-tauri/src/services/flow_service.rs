@@ -2,11 +2,15 @@ use crate::error::Result;
 use crate::models::*;
 use crate::parsers::{xml_parser, mermaid_parser};
 use crate::processors::variable_resolver;
+use crate::validators::schema_validator;
 use tokio::fs;
 
 /// Load and parse context document from XML file
 pub async fn load_context_document(file_path: &str) -> Result<ContextDocument> {
     let xml_content = fs::read_to_string(file_path).await?;
+
+    // Validate schema before parsing
+    schema_validator::validate_schema(&xml_content)?;
 
     let mut doc = xml_parser::parse_xml(&xml_content)?;
 

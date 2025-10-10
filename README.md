@@ -92,9 +92,10 @@ cargo test
 ```
 
 **Test Summary**:
-- **47 total tests** covering models, parsers, processors, services, and integration
+- **55 total tests** covering models, parsers, validators, processors, services, and integration
 - **Unit tests**: Test individual components in isolation
 - **Integration tests**: Test complete workflows
+- **Schema validation tests**: Test XML structure enforcement
 - **Example file test**: Validates against `context-example.xml`
 
 ### Run specific test suites:
@@ -109,8 +110,42 @@ cargo test --test integration_test
 # Run test with example file
 cargo test --test test_with_example_file
 
+# Run schema validation tests specifically
+cargo test schema_validator
+
 # Run with output
 cargo test -- --nocapture
+```
+
+### Test XML Schema Validation
+
+The schema validator enforces structural rules before parsing:
+
+```bash
+# Test that valid documents pass
+cargo test test_valid_document
+
+# Test that nested sections are rejected
+cargo test test_nested_section_rejected
+
+# Test that invalid section types are caught
+cargo test test_invalid_section_type
+
+# Test all validation rules
+cargo test schema_validator -- --nocapture
+```
+
+**What Schema Validation Catches:**
+- ❌ Nested sections (all sections must be flat)
+- ❌ Invalid section types (only `intent`, `evaluation`, `process`, `alternatives` allowed)
+- ❌ Duplicate section IDs
+- ❌ Missing required elements (`meta`, `variables`, `sections`)
+- ❌ Sections without `id`, `type`, or `content`
+
+**Example validation error:**
+```
+Schema validation failed: Section 'parent-1' contains nested sections.
+Section nesting is not allowed - all sections must be direct children of <sections>.
 ```
 
 ### Test Coverage
@@ -119,8 +154,10 @@ cargo test -- --nocapture
 - ✅ **XML Parser** (5 tests): Meta, variables, sections, flow parsing
 - ✅ **Mermaid Parser** (6 tests): Node, edge, and click action parsing
 - ✅ **Variable Resolver** (8 tests): Variable substitution in sections
+- ✅ **Schema Validator** (8 tests): XML structure validation and error handling
 - ✅ **Flow Service** (7 tests): Async document loading and processing
-- ✅ **Integration** (6 tests): End-to-end workflows and error handling
+- ✅ **Integration** (5 tests): End-to-end workflows and error handling
+- ✅ **Example File** (1 test): Full validation with `context-example.xml`
 
 ## Project Structure
 
@@ -136,6 +173,8 @@ flow-writer/
 │   │   ├── parsers/        # Parsers
 │   │   │   ├── xml_parser.rs
 │   │   │   └── mermaid_parser.rs
+│   │   ├── validators/     # Schema validation
+│   │   │   └── schema_validator.rs
 │   │   ├── processors/     # Content processors
 │   │   │   └── variable_resolver.rs
 │   │   ├── services/       # Business logic
@@ -236,6 +275,7 @@ flowchart TD
 - `tauri` - Desktop application framework
 - `serde` - Serialization/deserialization
 - `quick-xml` - Fast XML parsing
+- `roxmltree` - XML schema validation
 - `regex` - Pattern matching for Mermaid
 - `tokio` - Async runtime
 - `thiserror` - Error handling
