@@ -26,8 +26,10 @@ This project follows Test-Driven Development practices:
 - Use `cargo test` to run all tests
 - Use `cargo test --test integration_test` to run specific integration tests
 
-
 ### Frontend Development
-- Always use `pnpm` rather than `npm`
+
+- Use `pnpm` instead of `npm`
 - Use **JavaScript/JSX** (not TypeScript) for React components
+- Use **SCSS** and `@emotion/styled` styled component for styling, do not use Tailwind CSS
+- Use Redux with Redux Toolkit for global state management
 - Follow functional components with hooks pattern

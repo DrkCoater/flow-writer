@@ -47,17 +47,20 @@ The frontend uses React with CodeMirror for editing markdown sections with flat 
 ### Installation
 
 1. **Clone the repository**:
+
    ```bash
    git clone <repository-url>
    cd flow-writer
    ```
 
 2. **Install frontend dependencies**:
+
    ```bash
    pnpm install
    ```
 
 3. **Install Rust dependencies** (automatically handled by Cargo):
+
    ```bash
    cd src-tauri
    cargo build
@@ -65,18 +68,19 @@ The frontend uses React with CodeMirror for editing markdown sections with flat 
 
 ## Development
 
-### Run the application in development mode:
+### Run the application in development mode
 
 ```bash
 pnpm tauri dev
 ```
 
 This will:
+
 - Start the Vite dev server for the React frontend
 - Compile and run the Rust backend
 - Open the application window
 
-### Build for production:
+### Build for production
 
 ```bash
 pnpm tauri build
@@ -84,7 +88,7 @@ pnpm tauri build
 
 ## Testing
 
-### Run all tests (unit + integration):
+### Run all tests (unit + integration)
 
 ```bash
 cd src-tauri
@@ -92,13 +96,14 @@ cargo test
 ```
 
 **Test Summary**:
+
 - **55 total tests** covering models, parsers, validators, processors, services, and integration
 - **Unit tests**: Test individual components in isolation
 - **Integration tests**: Test complete workflows
 - **Schema validation tests**: Test XML structure enforcement
 - **Example file test**: Validates against `context-example.xml`
 
-### Run specific test suites:
+### Run specific test suites
 
 ```bash
 # Run only unit tests
@@ -136,6 +141,7 @@ cargo test schema_validator -- --nocapture
 ```
 
 **What Schema Validation Catches:**
+
 - ❌ Nested sections (all sections must be flat)
 - ❌ Invalid section types (only `intent`, `evaluation`, `process`, `alternatives` allowed)
 - ❌ Duplicate section IDs
@@ -143,6 +149,7 @@ cargo test schema_validator -- --nocapture
 - ❌ Sections without `id`, `type`, or `content`
 
 **Example validation error:**
+
 ```
 Schema validation failed: Section 'parent-1' contains nested sections.
 Section nesting is not allowed - all sections must be direct children of <sections>.
@@ -198,6 +205,7 @@ flow-writer/
 The following commands are exposed to the frontend:
 
 #### `load_sections(file_path: string) -> Vec<Section>`
+
 Loads all sections from the context document with resolved variables.
 
 ```typescript
@@ -209,6 +217,7 @@ const sections = await invoke('load_sections', {
 ```
 
 #### `load_flow_graph(file_path: string) -> Option<FlowGraph>`
+
 Loads and parses the flow graph with enriched node references.
 
 ```typescript
@@ -218,6 +227,7 @@ const flowGraph = await invoke('load_flow_graph', {
 ```
 
 #### `load_metadata(file_path: string) -> MetaData`
+
 Loads document metadata (title, author, tags, etc.).
 
 ```typescript
@@ -264,6 +274,7 @@ flowchart TD
   A[Intent] --> B[Evaluation]
   click A "#intent-1" "Jump to Intent"
 ```
+
     ]]></diagram>
   </flow>
 </context>
@@ -272,6 +283,7 @@ flowchart TD
 ## Dependencies
 
 ### Backend (Rust)
+
 - `tauri` - Desktop application framework
 - `serde` - Serialization/deserialization
 - `quick-xml` - Fast XML parsing
@@ -281,10 +293,10 @@ flowchart TD
 - `thiserror` - Error handling
 
 ### Frontend (React)
+
 - React - UI framework
 - Vite - Build tool
 - CodeMirror - Code editor (planned)
-- TailwindCSS - Styling (planned)
 
 ## Contributing
 
@@ -301,4 +313,3 @@ flowchart TD
 ## Author
 
 Jeremy Lu
-

@@ -7,6 +7,7 @@ This document describes the architecture for loading XML context document sectio
 **Design Version:** 2.0 (Flat Sections)
 
 **Simplified Scope (MVP):**
+
 - Load from hardcoded XML file path (`src-tauri/context-docs/context-example.xml`)
 - Focus on rendering markdown sections as editable blocks only
 - **All sections are flat** - no nesting allowed
@@ -25,12 +26,14 @@ This document describes the architecture for loading XML context document sectio
 ### Existing Components
 
 **App.jsx**
+
 - Manages an array of hardcoded markdown blocks
 - Each block has: `id`, `content`, `isRendered`
 - Provides CRUD operations: add, delete, move up/down, edit
 - Uses simple integer IDs starting from 1
 
 **MarkdownBlock.jsx**
+
 - CodeMirror-based markdown editor
 - Edit/Preview toggle using Radix Tabs
 - Action buttons: Add, Move Up/Down, Delete
@@ -38,6 +41,7 @@ This document describes the architecture for loading XML context document sectio
 - ReactMarkdown for preview rendering
 
 **Dependencies**
+
 - `@tauri-apps/api` - Tauri API bindings (installed)
 - `@uiw/react-codemirror` - CodeMirror React wrapper
 - `@codemirror/lang-markdown` - Markdown language support
@@ -47,6 +51,7 @@ This document describes the architecture for loading XML context document sectio
 ### Backend API
 
 Tauri command we'll use:
+
 - `load_sections(filePath)` → Section[]
 
 ## Proposed Architecture
@@ -138,6 +143,7 @@ function sectionsToBlocks(sections) {
 ```
 
 **Example:**
+
 ```
 Input (4 flat sections):
 [
@@ -213,6 +219,7 @@ export function useContextDocument() {
 ### Enhanced MarkdownBlock Component
 
 **New Props:**
+
 ```javascript
 {
   // Existing props
@@ -235,6 +242,7 @@ export function useContextDocument() {
 ```
 
 **Section Type Styling:**
+
 - Different badge colors per type:
   - `intent` → Blue
   - `evaluation` → Green
@@ -277,6 +285,7 @@ const handleDelete = (id) => { /* ... */ };
 ### Backend Integration
 
 **Load Document:**
+
 ```javascript
 import { invoke } from '@tauri-apps/api/core';
 
@@ -288,6 +297,7 @@ const sections = await invoke('load_sections', {
 ### Variable Resolution
 
 Variables are already resolved by backend:
+
 - Input: `"User: ${userName}"`
 - Output: `"User: Jeremy"`
 
@@ -309,22 +319,26 @@ src/
 ## Implementation Phases
 
 ### Phase 1: Foundation (Core Loading)
+
 1. Create `utils/sectionTransform.js`
 2. Create `hooks/useContextDocument.js`
 3. Test basic loading and transformation
 
 ### Phase 2: UI Integration
+
 4. Modify `components/MarkdownBlock.jsx` (add section metadata)
 5. Modify `App.jsx` (integrate loading)
 6. Test with `context-example.xml`
 
 ### Phase 3: Polish
+
 7. Add loading states and error handling
 8. Style section type badges
 9. Add visual hierarchy for nested sections
 10. Test edge cases (empty sections, large documents)
 
 ### Phase 4: Future Enhancements (Post-MVP)
+
 - File selection dialog
 - Document metadata header display
 - Flow diagram integration
@@ -337,6 +351,7 @@ src/
 ### 1. Empty Sections
 
 **Handling:**
+
 - Allow empty content (valid use case)
 - Show placeholder text in edit mode
 - Preserve empty sections on save
@@ -344,18 +359,21 @@ src/
 ### 2. Large Documents
 
 **Optimization:**
+
 - For MVP: assume < 50 sections
 - Future: Use React virtualization for 100+ blocks
 
 ### 3. ID Conflicts
 
 **Prevention:**
+
 - Use section IDs from backend (guaranteed unique)
 - New blocks get temporary IDs (`new-1`, `new-2`)
 
 ## Testing Strategy
 
 ### Manual Testing Checklist
+
 - [ ] Document loads without errors on app mount
 - [ ] All 4 sections appear as blocks
 - [ ] Variables resolved (Jeremy, Ship the v1 Context Editor, etc.)
@@ -371,6 +389,7 @@ src/
 ## Success Criteria
 
 ✓ **MVP Success Criteria:**
+
 1. Document loads automatically on app mount
 2. All 4 sections load as editable blocks
 3. Variables are resolved
@@ -384,6 +403,7 @@ src/
 ## Future Roadmap
 
 **Post-MVP Features:**
+
 - File selection dialog
 - Document metadata display
 - Save functionality (blocks → XML)
