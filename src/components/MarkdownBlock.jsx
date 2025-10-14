@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Button, Flex, Tabs, Tooltip, IconButton, DropdownMenu, TextField, Badge } from "@radix-ui/themes";
-import { PlayIcon, Pencil1Icon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@radix-ui/react-icons";
+import { PlayIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@radix-ui/react-icons";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import ReactMarkdown from "react-markdown";
@@ -21,10 +21,25 @@ export function MarkdownBlock({
   isFirst,
   isLast,
   sectionType,
-  sectionId
+  sectionId,
+  minLines = 2,
+  maxLines = 10
 }) {
   const [showCustomAsk, setShowCustomAsk] = useState(false);
   const [customQuery, setCustomQuery] = useState("");
+
+  // Calculate dynamic height based on actual content lines
+  const editorStyle = useMemo(() => {
+    const lineCount = content.split('\n').length;
+    const clampedLines = Math.max(minLines, Math.min(maxLines, lineCount));
+    // Using 1.5em per line which is more semantic than pixels
+    return {
+      minHeight: `${minLines * 1.5}em`,
+      maxHeight: `${maxLines * 1.5}em`,
+      height: `${clampedLines * 1.5}em`,
+      overflow: 'auto'
+    };
+  }, [content, minLines, maxLines]);
 
   const handleReviseAction = (action) => {
     if (action === "custom-ask") {
@@ -88,13 +103,15 @@ export function MarkdownBlock({
         </Flex>
 
         <Tabs.Content value="edit">
-          <CodeMirror
-            value={content}
-            height="200px"
-            theme="dark"
-            extensions={[markdown()]}
-            onChange={(value) => onContentChange(id, value)}
-          />
+          <div className="editor-wrapper" style={editorStyle}>
+            <CodeMirror
+              value={content}
+              height="100%"
+              theme="dark"
+              extensions={[markdown()]}
+              onChange={(value) => onContentChange(id, value)}
+            />
+          </div>
         </Tabs.Content>
 
         <Tabs.Content value="preview">

@@ -74,9 +74,24 @@
   }
 }
 
+.editor-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  .cm-editor {
+    height: 100%;
+  }
+
+  .cm-scroller {
+    overflow: auto !important;
+  }
+}
+
 .action-buttons {
-  float: right;
   padding: 8px;
   display: flex;
   gap: 8px;
+  border-top: 1px solid #333;
+  background-color: #1a1a1a;
 }
