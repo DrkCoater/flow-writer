@@ -1,7 +1,8 @@
-import { Theme, Flex, Heading, Button, Spinner, Callout } from "@radix-ui/themes";
+import { Theme, Flex, Button, Spinner, Callout } from "@radix-ui/themes";
 import { useState, useEffect } from "react";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { MarkdownBlock } from "./components/MarkdownBlock";
+import { Toolbar } from "./components/Toolbar";
 import { useContextDocument } from "./hooks/useContextDocument";
 import { sectionsToBlocks } from "./utils/sectionTransform";
 
@@ -117,62 +118,84 @@ function App() {
   };
 
   return (
-    <Theme appearance="dark">
-      <Flex direction="column" align="center" gap="4" style={{ minHeight: "100vh", padding: "2rem 4rem" }}>
-        <div style={{ width: "100%" }}>
-          {loading && (
-            <Flex justify="center" align="center" style={{ minHeight: "200px" }}>
-              <Spinner size="3" />
-            </Flex>
-          )}
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      width: '100%',
+      overflow: 'hidden'
+    }}>
+      <Toolbar />
+      <Theme appearance="dark" style={{
+        flex: 1,
+        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <Flex
+          direction="column"
+          align="center"
+          gap="4"
+          style={{
+            padding: "2rem 4rem",
+            width: "100%"
+          }}
+        >
+          <div style={{ width: "100%" }}>
+            {loading && (
+              <Flex justify="center" align="center" style={{ minHeight: "200px" }}>
+                <Spinner size="3" />
+              </Flex>
+            )}
 
-          {error && (
-            <Callout.Root color="red" style={{ marginBottom: "16px" }}>
-              <Callout.Icon>
-                <ExclamationTriangleIcon />
-              </Callout.Icon>
-              <Callout.Text>
-                <strong>Error loading document:</strong> {error}
-              </Callout.Text>
-            </Callout.Root>
-          )}
+            {error && (
+              <Callout.Root color="red" style={{ marginBottom: "16px" }}>
+                <Callout.Icon>
+                  <ExclamationTriangleIcon />
+                </Callout.Icon>
+                <Callout.Text>
+                  <strong>Error loading document:</strong> {error}
+                </Callout.Text>
+              </Callout.Root>
+            )}
 
-          {!loading && !error && blocks.length === 0 && (
-            <Callout.Root style={{ marginBottom: "16px" }}>
-              <Callout.Text>No sections loaded. Click "Add New Block" to start.</Callout.Text>
-            </Callout.Root>
-          )}
+            {!loading && !error && blocks.length === 0 && (
+              <Callout.Root style={{ marginBottom: "16px" }}>
+                <Callout.Text>No sections loaded. Click "Add New Block" to start.</Callout.Text>
+              </Callout.Root>
+            )}
 
-          {!loading &&
-            blocks.map((block, index) => (
-              <MarkdownBlock
-                key={block.id}
-                id={block.id}
-                content={block.content}
-                isRendered={block.isRendered}
-                onContentChange={handleContentChange}
-                onToggleRender={handleToggleRender}
-                onDelete={handleDelete}
-                onMoveUp={handleMoveUp}
-                onMoveDown={handleMoveDown}
-                onAddBelow={handleAddBelow}
-                onMergeWithPrevious={handleMergeWithPrevious}
-                isFirst={index === 0}
-                isLast={index === blocks.length - 1}
-                sectionType={block.sectionType}
-                sectionId={block.sectionId}
-                justMerged={block.id === justMergedBlockId}
-              />
-            ))}
+            {!loading &&
+              blocks.map((block, index) => (
+                <MarkdownBlock
+                  key={block.id}
+                  id={block.id}
+                  content={block.content}
+                  isRendered={block.isRendered}
+                  onContentChange={handleContentChange}
+                  onToggleRender={handleToggleRender}
+                  onDelete={handleDelete}
+                  onMoveUp={handleMoveUp}
+                  onMoveDown={handleMoveDown}
+                  onAddBelow={handleAddBelow}
+                  onMergeWithPrevious={handleMergeWithPrevious}
+                  isFirst={index === 0}
+                  isLast={index === blocks.length - 1}
+                  sectionType={block.sectionType}
+                  sectionId={block.sectionId}
+                  justMerged={block.id === justMergedBlockId}
+                />
+              ))}
 
-          {!loading && (
-            <Button size="3" variant="soft" style={{ width: "100%", marginTop: "16px" }} onClick={handleAddBlock}>
-              + Add New Block
-            </Button>
-          )}
-        </div>
-      </Flex>
-    </Theme>
+            {!loading && (
+              <Button size="3" variant="soft" style={{ width: "100%", marginTop: "16px" }} onClick={handleAddBlock}>
+                + Add New Block
+              </Button>
+            )}
+          </div>
+        </Flex>
+      </Theme>
+    </div>
   );
 }
 
