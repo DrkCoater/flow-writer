@@ -104,6 +104,20 @@
   .cm-activeLineGutter {
     background-color: #252525 !important;
   }
+
+  // Dark theme for text selection
+  .cm-selectionBackground,
+  ::selection {
+    background-color: #264f78 !important;
+  }
+
+  .cm-focused .cm-selectionBackground {
+    background-color: #264f78 !important;
+  }
+
+  .cm-content ::selection {
+    background-color: #264f78 !important;
+  }
 }
 
 .action-buttons {
