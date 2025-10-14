@@ -118,37 +118,36 @@ export function MarkdownBlock({
   sectionId,
   minLines = 2,
   maxLines = 10,
-  justMerged = false
+  justMerged = false,
+  mergeCursorPosition = null
 }) {
   const theme = useSelector(selectTheme);
   const [showCustomAsk, setShowCustomAsk] = useState(false);
   const [customQuery, setCustomQuery] = useState("");
-  const editorViewRef = useRef(null);
+  const codeMirrorViewRef = useRef(null);
   const editorWrapperRef = useRef(null);
 
-  // Auto-scroll to bottom after merge
+  // Set cursor position and scroll into view after merge
   useEffect(() => {
-    if (justMerged) {
+    if (justMerged && mergeCursorPosition !== null && codeMirrorViewRef.current) {
       // Use setTimeout to ensure DOM has updated and CodeMirror has rendered
       const timeoutId = setTimeout(() => {
-        if (!editorWrapperRef.current) return;
+        const view = codeMirrorViewRef.current;
+        if (!view) return;
 
-        // Try multiple selectors to find the scrollable element
-        const scrollElement =
-          editorWrapperRef.current.querySelector(".cm-scroller") ||
-          editorWrapperRef.current.querySelector(".cm-content");
+        // Set cursor position and scroll into view in one dispatch
+        view.dispatch({
+          selection: { anchor: mergeCursorPosition, head: mergeCursorPosition },
+          scrollIntoView: true
+        });
 
-        if (scrollElement) {
-          scrollElement.scrollTop = scrollElement.scrollHeight;
-        }
-
-        // Also scroll the wrapper itself
-        editorWrapperRef.current.scrollTop = editorWrapperRef.current.scrollHeight;
+        // Focus the editor
+        view.focus();
       }, 100);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [justMerged, id]);
+  }, [justMerged, mergeCursorPosition, id]);
 
   // Calculate dynamic height based on actual content lines
   const clampedLines = useMemo(() => {
@@ -254,6 +253,9 @@ export function MarkdownBlock({
               theme={theme}
               extensions={extensions}
               onChange={(value) => onContentChange(id, value)}
+              onCreateEditor={(view) => {
+                codeMirrorViewRef.current = view;
+              }}
             />
           </EditorWrapper>
         </Tabs.Content>

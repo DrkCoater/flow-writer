@@ -14,6 +14,7 @@ function App() {
   const [blocks, setBlocks] = useState([]);
   const [nextId, setNextId] = useState(1);
   const [justMergedBlockId, setJustMergedBlockId] = useState(null);
+  const [mergeCursorPosition, setMergeCursorPosition] = useState(null);
 
   // Load sections from backend
   useEffect(() => {
@@ -77,10 +78,13 @@ function App() {
     if (index > 0) {
       const currentBlock = blocks[index];
       const previousBlock = blocks[index - 1];
-      
+
       // Merge content: previous content + current content
       const mergedContent = previousBlock.content + '\n' + currentBlock.content;
-      
+
+      // Calculate cursor position: after previous content + newline
+      const cursorPos = previousBlock.content.length + 1;
+
       // Update previous block with merged content
       const newBlocks = blocks.map((block, idx) => {
         if (idx === index - 1) {
@@ -88,20 +92,23 @@ function App() {
         }
         return block;
       });
-      
+
       // Remove current block
       newBlocks.splice(index, 1);
-      
+
       setBlocks(newBlocks);
-      
-      // Signal which block just received merged content
+
+      // Signal which block just received merged content and where cursor should be
       setJustMergedBlockId(previousBlock.id);
-      
-      // Clear the signal after a short delay (longer than the scroll timeout)
-      setTimeout(() => setJustMergedBlockId(null), 300);
-      
-      // Return the cursor position where the merge happened (length of previous content)
-      return previousBlock.content.length;
+      setMergeCursorPosition({ blockId: previousBlock.id, position: cursorPos });
+
+      // Clear the signals after a short delay
+      setTimeout(() => {
+        setJustMergedBlockId(null);
+        setMergeCursorPosition(null);
+      }, 300);
+
+      return cursorPos;
     }
     return null;
   };
@@ -187,6 +194,7 @@ function App() {
                   sectionType={block.sectionType}
                   sectionId={block.sectionId}
                   justMerged={block.id === justMergedBlockId}
+                  mergeCursorPosition={mergeCursorPosition?.blockId === block.id ? mergeCursorPosition.position : null}
                 />
               ))}
 

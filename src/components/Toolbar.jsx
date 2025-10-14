@@ -1,20 +1,19 @@
-import { useDispatch, useSelector } from 'react-redux';
-import styled from '@emotion/styled';
-import { IconButton } from '@radix-ui/themes';
-import { SunIcon, MoonIcon } from '@radix-ui/react-icons';
-import { toggleTheme, selectTheme } from '../store/slices/globalSlice';
-import { colors, spacing, zIndices } from '../styles/tokens';
+import { useDispatch, useSelector } from "react-redux";
+import styled from "@emotion/styled";
+import { IconButton } from "@radix-ui/themes";
+import { SunIcon, MoonIcon } from "@radix-ui/react-icons";
+import { toggleTheme, selectTheme } from "../store/slices/globalSlice";
+import { colors, spacing, zIndices } from "../styles/tokens";
 
 const StyledToolbar = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 38px;
+  height: 28px;
   background: ${colors.background.panel};
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid ${colors.border.subtle};
   z-index: ${zIndices.toolbar};
   display: flex;
   align-items: center;
@@ -28,9 +27,9 @@ const ToolbarSection = styled.div`
   align-items: center;
   gap: ${spacing.md};
   height: 100%;
-  padding-right: ${props => props.$isRight ? '4px' : '0'};
-  flex: ${props => props.$isCenter ? 1 : 'unset'};
-  justify-content: ${props => props.$isCenter ? 'center' : 'flex-start'};
+  padding-right: ${(props) => (props.$isRight ? "4px" : "0")};
+  flex: ${(props) => (props.$isCenter ? 1 : "unset")};
+  justify-content: ${(props) => (props.$isCenter ? "center" : "flex-start")};
 `;
 
 const ThemeToggle = styled(IconButton)`
@@ -51,12 +50,8 @@ export function Toolbar() {
       <ToolbarSection data-tauri-drag-region />
       <ToolbarSection $isCenter data-tauri-drag-region />
       <ToolbarSection $isRight>
-        <ThemeToggle
-          size="1"
-          variant="ghost"
-          onClick={() => dispatch(toggleTheme())}
-        >
-          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+        <ThemeToggle size="1" variant="ghost" onClick={() => dispatch(toggleTheme())}>
+          {theme === "dark" ? <SunIcon /> : <MoonIcon />}
         </ThemeToggle>
       </ToolbarSection>
     </StyledToolbar>
