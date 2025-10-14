@@ -111,15 +111,16 @@ export function MarkdownBlock({
   onMoveUp,
   onMoveDown,
   onAddBelow,
-  onMergeWithPrevious,
+  onNavigateToPrevious,
+  onNavigateToNext,
   isFirst,
   isLast,
   sectionType,
   sectionId,
   minLines = 2,
   maxLines = 10,
-  justMerged = false,
-  mergeCursorPosition = null
+  shouldFocus = false,
+  focusCursorPosition = null
 }) {
   const theme = useSelector(selectTheme);
   const [showCustomAsk, setShowCustomAsk] = useState(false);
@@ -127,27 +128,29 @@ export function MarkdownBlock({
   const codeMirrorViewRef = useRef(null);
   const editorWrapperRef = useRef(null);
 
-  // Set cursor position and scroll into view after merge
+  // Key press tracking
+  const arrowUpCountRef = useRef(0);
+  const arrowDownCountRef = useRef(0);
+  const keyResetTimerRef = useRef(null);
+
+  // Set cursor position and focus after navigation
   useEffect(() => {
-    if (justMerged && mergeCursorPosition !== null && codeMirrorViewRef.current) {
-      // Use setTimeout to ensure DOM has updated and CodeMirror has rendered
+    if (shouldFocus && focusCursorPosition !== null && codeMirrorViewRef.current) {
       const timeoutId = setTimeout(() => {
         const view = codeMirrorViewRef.current;
         if (!view) return;
 
-        // Set cursor position and scroll into view in one dispatch
         view.dispatch({
-          selection: { anchor: mergeCursorPosition, head: mergeCursorPosition },
+          selection: { anchor: focusCursorPosition, head: focusCursorPosition },
           scrollIntoView: true
         });
 
-        // Focus the editor
         view.focus();
       }, 100);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [justMerged, mergeCursorPosition, id]);
+  }, [shouldFocus, focusCursorPosition, id]);
 
   // Calculate dynamic height based on actual content lines
   const clampedLines = useMemo(() => {
@@ -155,27 +158,74 @@ export function MarkdownBlock({
     return Math.max(minLines, Math.min(maxLines, lineCount));
   }, [content, minLines, maxLines]);
 
-  // Custom keymap extension for backspace at start
+  // Helper to reset key counters
+  const resetKeyCounters = () => {
+    arrowUpCountRef.current = 0;
+    arrowDownCountRef.current = 0;
+    if (keyResetTimerRef.current) {
+      clearTimeout(keyResetTimerRef.current);
+      keyResetTimerRef.current = null;
+    }
+  };
+
+  // Helper to schedule counter reset
+  const scheduleCounterReset = () => {
+    if (keyResetTimerRef.current) {
+      clearTimeout(keyResetTimerRef.current);
+    }
+    keyResetTimerRef.current = setTimeout(() => {
+      resetKeyCounters();
+    }, 500);
+  };
+
+  // Custom keymap extension for special key behaviors
   const customKeymap = useMemo(() => {
     return keymap.of([
       {
-        key: "Backspace",
+        key: "ArrowUp",
         run: (view) => {
-          // Check if cursor is at position 0
-          const { from, to } = view.state.selection.main;
-          if (from === 0 && to === 0 && !isFirst) {
-            // Trigger merge with previous block
-            const cursorPosition = onMergeWithPrevious(id);
+          const { from } = view.state.selection.main;
 
-            // The block will be removed, and the previous block will have the merged content
-            // We don't need to do anything else here as the component will unmount
-            return true; // Prevent default backspace behavior
+          if (from === 0 && !isFirst && onNavigateToPrevious) {
+            arrowUpCountRef.current += 1;
+            scheduleCounterReset();
+
+            if (arrowUpCountRef.current >= 2) {
+              resetKeyCounters();
+              onNavigateToPrevious(id);
+              return true;
+            }
+            return true; // Prevent default navigation but don't move yet
+          } else {
+            arrowUpCountRef.current = 0;
           }
-          return false; // Allow default backspace behavior
+          return false;
+        }
+      },
+      {
+        key: "ArrowDown",
+        run: (view) => {
+          const { from } = view.state.selection.main;
+          const lastLine = view.state.doc.line(view.state.doc.lines);
+
+          if (from >= lastLine.from && from <= lastLine.to && !isLast && onNavigateToNext) {
+            arrowDownCountRef.current += 1;
+            scheduleCounterReset();
+
+            if (arrowDownCountRef.current >= 2) {
+              resetKeyCounters();
+              onNavigateToNext(id);
+              return true;
+            }
+            return true; // Prevent default navigation but don't move yet
+          } else {
+            arrowDownCountRef.current = 0;
+          }
+          return false;
         }
       }
     ]);
-  }, [id, isFirst, onMergeWithPrevious]);
+  }, [id, isFirst, isLast, onNavigateToPrevious, onNavigateToNext]);
 
   const extensions = useMemo(() => {
     return [markdown(), customKeymap];

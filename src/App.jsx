@@ -13,8 +13,8 @@ function App() {
   const { sections, loading, error } = useContextDocument();
   const [blocks, setBlocks] = useState([]);
   const [nextId, setNextId] = useState(1);
-  const [justMergedBlockId, setJustMergedBlockId] = useState(null);
-  const [mergeCursorPosition, setMergeCursorPosition] = useState(null);
+  const [focusedBlockId, setFocusedBlockId] = useState(null);
+  const [focusCursorPosition, setFocusCursorPosition] = useState(null);
 
   // Load sections from backend
   useEffect(() => {
@@ -73,44 +73,25 @@ function App() {
     setNextId(nextId + 1);
   };
 
-  const handleMergeWithPrevious = (id) => {
+  const handleNavigateToPrevious = (id) => {
     const index = blocks.findIndex((block) => block.id === id);
     if (index > 0) {
-      const currentBlock = blocks[index];
       const previousBlock = blocks[index - 1];
+      const cursorPos = previousBlock.content.length;
 
-      // Merge content: previous content + current content
-      const mergedContent = previousBlock.content + '\n' + currentBlock.content;
-
-      // Calculate cursor position: after previous content + newline
-      const cursorPos = previousBlock.content.length + 1;
-
-      // Update previous block with merged content
-      const newBlocks = blocks.map((block, idx) => {
-        if (idx === index - 1) {
-          return { ...block, content: mergedContent, isRendered: false };
-        }
-        return block;
-      });
-
-      // Remove current block
-      newBlocks.splice(index, 1);
-
-      setBlocks(newBlocks);
-
-      // Signal which block just received merged content and where cursor should be
-      setJustMergedBlockId(previousBlock.id);
-      setMergeCursorPosition({ blockId: previousBlock.id, position: cursorPos });
-
-      // Clear the signals after a short delay
-      setTimeout(() => {
-        setJustMergedBlockId(null);
-        setMergeCursorPosition(null);
-      }, 300);
-
-      return cursorPos;
+      setFocusedBlockId(previousBlock.id);
+      setFocusCursorPosition({ blockId: previousBlock.id, position: cursorPos });
     }
-    return null;
+  };
+
+  const handleNavigateToNext = (id) => {
+    const index = blocks.findIndex((block) => block.id === id);
+    if (index < blocks.length - 1) {
+      const nextBlock = blocks[index + 1];
+
+      setFocusedBlockId(nextBlock.id);
+      setFocusCursorPosition({ blockId: nextBlock.id, position: 0 });
+    }
   };
 
   const handleAddBlock = () => {
@@ -188,13 +169,14 @@ function App() {
                   onMoveUp={handleMoveUp}
                   onMoveDown={handleMoveDown}
                   onAddBelow={handleAddBelow}
-                  onMergeWithPrevious={handleMergeWithPrevious}
+                  onNavigateToPrevious={handleNavigateToPrevious}
+                  onNavigateToNext={handleNavigateToNext}
                   isFirst={index === 0}
                   isLast={index === blocks.length - 1}
                   sectionType={block.sectionType}
                   sectionId={block.sectionId}
-                  justMerged={block.id === justMergedBlockId}
-                  mergeCursorPosition={mergeCursorPosition?.blockId === block.id ? mergeCursorPosition.position : null}
+                  shouldFocus={block.id === focusedBlockId}
+                  focusCursorPosition={focusCursorPosition?.blockId === block.id ? focusCursorPosition.position : null}
                 />
               ))}
 
