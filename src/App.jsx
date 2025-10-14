@@ -60,7 +60,7 @@ function App() {
     const index = blocks.findIndex(block => block.id === id);
     const newBlock = {
       id: `new-${nextId}`,
-      content: '# New Block\n\nStart editing here...',
+      content: '## New Block, start editing...',
       isRendered: false,
       sectionId: `new-${nextId}`,
       sectionType: 'notes'
@@ -74,7 +74,7 @@ function App() {
   const handleAddBlock = () => {
     setBlocks([...blocks, {
       id: `new-${nextId}`,
-      content: '# New Block\n\nStart editing here...',
+      content: '## New Block, start editing...',
       isRendered: false,
       sectionId: `new-${nextId}`,
       sectionType: 'notes'
