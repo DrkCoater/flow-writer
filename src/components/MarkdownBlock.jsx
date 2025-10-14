@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Button, Flex, Tabs, Tooltip, IconButton, DropdownMenu, TextField, Badge } from "@radix-ui/themes";
 import { PlayIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@radix-ui/react-icons";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
+import { keymap } from "@codemirror/view";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getSectionTypeColor, formatSectionType } from "../utils/sectionTransform";
@@ -18,15 +19,43 @@ export function MarkdownBlock({
   onMoveUp,
   onMoveDown,
   onAddBelow,
+  onMergeWithPrevious,
   isFirst,
   isLast,
   sectionType,
   sectionId,
   minLines = 2,
-  maxLines = 10
+  maxLines = 10,
+  justMerged = false
 }) {
   const [showCustomAsk, setShowCustomAsk] = useState(false);
   const [customQuery, setCustomQuery] = useState("");
+  const editorViewRef = useRef(null);
+  const editorWrapperRef = useRef(null);
+
+  // Auto-scroll to bottom after merge
+  useEffect(() => {
+    if (justMerged) {
+      // Use setTimeout to ensure DOM has updated and CodeMirror has rendered
+      const timeoutId = setTimeout(() => {
+        if (!editorWrapperRef.current) return;
+        
+        // Try multiple selectors to find the scrollable element
+        const scrollElement = 
+          editorWrapperRef.current.querySelector('.cm-scroller') ||
+          editorWrapperRef.current.querySelector('.cm-content');
+        
+        if (scrollElement) {
+          scrollElement.scrollTop = scrollElement.scrollHeight;
+        }
+        
+        // Also scroll the wrapper itself
+        editorWrapperRef.current.scrollTop = editorWrapperRef.current.scrollHeight;
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [justMerged, id]);
 
   // Calculate dynamic height based on actual content lines
   const editorStyle = useMemo(() => {
@@ -40,6 +69,32 @@ export function MarkdownBlock({
       overflow: 'auto'
     };
   }, [content, minLines, maxLines]);
+
+  // Custom keymap extension for backspace at start
+  const customKeymap = useMemo(() => {
+    return keymap.of([
+      {
+        key: "Backspace",
+        run: (view) => {
+          // Check if cursor is at position 0
+          const { from, to } = view.state.selection.main;
+          if (from === 0 && to === 0 && !isFirst) {
+            // Trigger merge with previous block
+            const cursorPosition = onMergeWithPrevious(id);
+            
+            // The block will be removed, and the previous block will have the merged content
+            // We don't need to do anything else here as the component will unmount
+            return true; // Prevent default backspace behavior
+          }
+          return false; // Allow default backspace behavior
+        }
+      }
+    ]);
+  }, [id, isFirst, onMergeWithPrevious]);
+
+  const extensions = useMemo(() => {
+    return [markdown(), customKeymap];
+  }, [customKeymap]);
 
   const handleReviseAction = (action) => {
     if (action === "custom-ask") {
@@ -103,12 +158,12 @@ export function MarkdownBlock({
         </Flex>
 
         <Tabs.Content value="edit">
-          <div className="editor-wrapper" style={editorStyle}>
+          <div ref={editorWrapperRef} className="editor-wrapper" style={editorStyle}>
             <CodeMirror
               value={content}
               height="100%"
               theme="dark"
-              extensions={[markdown()]}
+              extensions={extensions}
               onChange={(value) => onContentChange(id, value)}
             />
           </div>

@@ -86,6 +86,24 @@
   .cm-scroller {
     overflow: auto !important;
   }
+
+  // Dark theme for line numbers
+  .cm-gutters {
+    background-color: #1a1a1a !important;
+    border-right: 1px solid #333 !important;
+  }
+
+  .cm-gutter {
+    background-color: #1a1a1a !important;
+  }
+
+  .cm-lineNumbers {
+    color: #666 !important;
+  }
+
+  .cm-activeLineGutter {
+    background-color: #252525 !important;
+  }
 }
 
 .action-buttons {

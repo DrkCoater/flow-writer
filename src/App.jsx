@@ -9,6 +9,7 @@ function App() {
   const { sections, loading, error } = useContextDocument();
   const [blocks, setBlocks] = useState([]);
   const [nextId, setNextId] = useState(1);
+  const [justMergedBlockId, setJustMergedBlockId] = useState(null);
 
   // Load sections from backend
   useEffect(() => {
@@ -67,6 +68,40 @@ function App() {
     setNextId(nextId + 1);
   };
 
+  const handleMergeWithPrevious = (id) => {
+    const index = blocks.findIndex((block) => block.id === id);
+    if (index > 0) {
+      const currentBlock = blocks[index];
+      const previousBlock = blocks[index - 1];
+      
+      // Merge content: previous content + current content
+      const mergedContent = previousBlock.content + '\n' + currentBlock.content;
+      
+      // Update previous block with merged content
+      const newBlocks = blocks.map((block, idx) => {
+        if (idx === index - 1) {
+          return { ...block, content: mergedContent, isRendered: false };
+        }
+        return block;
+      });
+      
+      // Remove current block
+      newBlocks.splice(index, 1);
+      
+      setBlocks(newBlocks);
+      
+      // Signal which block just received merged content
+      setJustMergedBlockId(previousBlock.id);
+      
+      // Clear the signal after a short delay (longer than the scroll timeout)
+      setTimeout(() => setJustMergedBlockId(null), 300);
+      
+      // Return the cursor position where the merge happened (length of previous content)
+      return previousBlock.content.length;
+    }
+    return null;
+  };
+
   const handleAddBlock = () => {
     setBlocks([
       ...blocks,
@@ -121,10 +156,12 @@ function App() {
                 onMoveUp={handleMoveUp}
                 onMoveDown={handleMoveDown}
                 onAddBelow={handleAddBelow}
+                onMergeWithPrevious={handleMergeWithPrevious}
                 isFirst={index === 0}
                 isLast={index === blocks.length - 1}
                 sectionType={block.sectionType}
                 sectionId={block.sectionId}
+                justMerged={block.id === justMergedBlockId}
               />
             ))}
 
