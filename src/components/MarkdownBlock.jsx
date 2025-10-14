@@ -39,34 +39,34 @@ export function MarkdownBlock({
       // Use setTimeout to ensure DOM has updated and CodeMirror has rendered
       const timeoutId = setTimeout(() => {
         if (!editorWrapperRef.current) return;
-        
+
         // Try multiple selectors to find the scrollable element
-        const scrollElement = 
-          editorWrapperRef.current.querySelector('.cm-scroller') ||
-          editorWrapperRef.current.querySelector('.cm-content');
-        
+        const scrollElement =
+          editorWrapperRef.current.querySelector(".cm-scroller") ||
+          editorWrapperRef.current.querySelector(".cm-content");
+
         if (scrollElement) {
           scrollElement.scrollTop = scrollElement.scrollHeight;
         }
-        
+
         // Also scroll the wrapper itself
         editorWrapperRef.current.scrollTop = editorWrapperRef.current.scrollHeight;
       }, 100);
-      
+
       return () => clearTimeout(timeoutId);
     }
   }, [justMerged, id]);
 
   // Calculate dynamic height based on actual content lines
   const editorStyle = useMemo(() => {
-    const lineCount = content.split('\n').length;
+    const lineCount = content.split("\n").length;
     const clampedLines = Math.max(minLines, Math.min(maxLines, lineCount));
     // Using 1.5em per line which is more semantic than pixels
     return {
       minHeight: `${minLines * 1.5}em`,
       maxHeight: `${maxLines * 1.5}em`,
       height: `${clampedLines * 1.5}em`,
-      overflow: 'auto'
+      overflow: "auto"
     };
   }, [content, minLines, maxLines]);
 
@@ -81,7 +81,7 @@ export function MarkdownBlock({
           if (from === 0 && to === 0 && !isFirst) {
             // Trigger merge with previous block
             const cursorPosition = onMergeWithPrevious(id);
-            
+
             // The block will be removed, and the previous block will have the merged content
             // We don't need to do anything else here as the component will unmount
             return true; // Prevent default backspace behavior
@@ -127,13 +127,11 @@ export function MarkdownBlock({
               </Badge>
             )}
             {sectionId && (
-              <span style={{ fontSize: '12px', color: 'var(--gray-10)', fontFamily: 'monospace' }}>
-                {sectionId}
-              </span>
+              <span style={{ fontSize: "12px", color: "var(--gray-10)", fontFamily: "monospace" }}>{sectionId}</span>
             )}
           </Flex>
 
-          <Flex gap="2">
+          <Flex gap="2" style={{ marginRight: "12px" }}>
             <Tooltip content="Add Block">
               <IconButton size="1" variant="soft" onClick={() => onAddBelow(id)}>
                 <PlusIcon />
