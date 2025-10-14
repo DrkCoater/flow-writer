@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
+import styled from "@emotion/styled";
 import { Button, Flex, Tabs, Tooltip, IconButton, DropdownMenu, TextField, Badge } from "@radix-ui/themes";
 import { PlayIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@radix-ui/react-icons";
 import CodeMirror from "@uiw/react-codemirror";
@@ -7,7 +9,97 @@ import { keymap } from "@codemirror/view";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getSectionTypeColor, formatSectionType } from "../utils/sectionTransform";
-import "./MarkdownBlock.scss";
+import { selectTheme } from "../store/slices/globalSlice";
+import { colors, spacing, radii } from "../styles/tokens";
+
+const BlockContainer = styled.div`
+  width: 100%;
+  border: 1px solid ${colors.border.default};
+  border-radius: ${radii.lg};
+  overflow: hidden;
+  margin: ${spacing.xxl} 0 ${spacing.lg} 0;
+  background-color: ${colors.background.elevated};
+`;
+
+const PreviewContainer = styled.div`
+  padding: ${spacing.lg};
+  min-height: 100px;
+  background-color: ${colors.background.base};
+  color: ${colors.text.primary};
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: ${spacing.lg};
+    margin-bottom: ${spacing.sm};
+    color: ${colors.text.primary};
+  }
+
+  p {
+    margin-bottom: ${spacing.md};
+    line-height: 1.6;
+  }
+
+  code {
+    background-color: ${colors.background.active};
+    padding: 2px 6px;
+    border-radius: ${radii.sm};
+    font-family: "Courier New", monospace;
+    color: ${colors.text.primary};
+  }
+
+  pre {
+    background-color: ${colors.background.active};
+    padding: ${spacing.md};
+    border-radius: ${radii.md};
+    overflow-x: auto;
+
+    code {
+      background-color: transparent;
+    }
+  }
+
+  ul, ol {
+    margin-bottom: ${spacing.md};
+    padding-left: ${spacing.xl};
+  }
+
+  table {
+    border-collapse: collapse;
+    margin-bottom: ${spacing.md};
+  }
+
+  th, td {
+    border: 1px solid ${colors.border.default};
+    padding: ${spacing.sm};
+  }
+
+  th {
+    background-color: ${colors.background.active};
+  }
+`;
+
+const EditorWrapper = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: ${props => `${props.$minLines * 1.5}em`};
+  max-height: ${props => `${props.$maxLines * 1.5}em`};
+  height: ${props => `${props.$clampedLines * 1.5}em`};
+  overflow: auto;
+
+  .cm-editor {
+    height: 100%;
+  }
+
+  .cm-scroller {
+    overflow: auto;
+  }
+`;
+
+const ActionButtons = styled(Flex)`
+  padding: ${spacing.sm};
+  border-top: 1px solid ${colors.border.default};
+  background-color: ${colors.background.elevated};
+`;
 
 export function MarkdownBlock({
   id,
@@ -28,6 +120,7 @@ export function MarkdownBlock({
   maxLines = 10,
   justMerged = false
 }) {
+  const theme = useSelector(selectTheme);
   const [showCustomAsk, setShowCustomAsk] = useState(false);
   const [customQuery, setCustomQuery] = useState("");
   const editorViewRef = useRef(null);
@@ -58,16 +151,9 @@ export function MarkdownBlock({
   }, [justMerged, id]);
 
   // Calculate dynamic height based on actual content lines
-  const editorStyle = useMemo(() => {
+  const clampedLines = useMemo(() => {
     const lineCount = content.split("\n").length;
-    const clampedLines = Math.max(minLines, Math.min(maxLines, lineCount));
-    // Using 1.5em per line which is more semantic than pixels
-    return {
-      minHeight: `${minLines * 1.5}em`,
-      maxHeight: `${maxLines * 1.5}em`,
-      height: `${clampedLines * 1.5}em`,
-      overflow: "auto"
-    };
+    return Math.max(minLines, Math.min(maxLines, lineCount));
   }, [content, minLines, maxLines]);
 
   // Custom keymap extension for backspace at start
@@ -106,7 +192,7 @@ export function MarkdownBlock({
   };
 
   return (
-    <div className="block-container">
+    <BlockContainer>
       <Tabs.Root
         value={isRendered ? "preview" : "edit"}
         onValueChange={(value) => {
@@ -156,25 +242,30 @@ export function MarkdownBlock({
         </Flex>
 
         <Tabs.Content value="edit">
-          <div ref={editorWrapperRef} className="editor-wrapper" style={editorStyle}>
+          <EditorWrapper
+            ref={editorWrapperRef}
+            $minLines={minLines}
+            $maxLines={maxLines}
+            $clampedLines={clampedLines}
+          >
             <CodeMirror
               value={content}
               height="100%"
-              theme="dark"
+              theme={theme}
               extensions={extensions}
               onChange={(value) => onContentChange(id, value)}
             />
-          </div>
+          </EditorWrapper>
         </Tabs.Content>
 
         <Tabs.Content value="preview">
-          <div className="preview-container">
+          <PreviewContainer>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-          </div>
+          </PreviewContainer>
         </Tabs.Content>
       </Tabs.Root>
 
-      <Flex className="action-buttons" gap="2" align="center">
+      <ActionButtons gap="2" align="center">
         {showCustomAsk && (
           <TextField.Root
             size="1"
@@ -203,7 +294,7 @@ export function MarkdownBlock({
         <Button size="1" variant="soft">
           <PlayIcon />
         </Button>
-      </Flex>
-    </div>
+      </ActionButtons>
+    </BlockContainer>
   );
 }

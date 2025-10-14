@@ -1,12 +1,15 @@
 import { Theme, Flex, Button, Spinner, Callout } from "@radix-ui/themes";
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { MarkdownBlock } from "./components/MarkdownBlock";
 import { Toolbar } from "./components/Toolbar";
 import { useContextDocument } from "./hooks/useContextDocument";
 import { sectionsToBlocks } from "./utils/sectionTransform";
+import { selectTheme } from "./store/slices/globalSlice";
 
 function App() {
+  const theme = useSelector(selectTheme);
   const { sections, loading, error } = useContextDocument();
   const [blocks, setBlocks] = useState([]);
   const [nextId, setNextId] = useState(1);
@@ -126,7 +129,7 @@ function App() {
       overflow: 'hidden'
     }}>
       <Toolbar />
-      <Theme appearance="dark" style={{
+      <Theme appearance={theme} style={{
         flex: 1,
         overflow: 'auto',
         display: 'flex',
