@@ -17,7 +17,7 @@
   </variables>
 
   <sections>
-    <!-- Intent -->
+    <!-- 1. Intent Section (FIRST) -->
     <section id="intent-1" type="intent">
       <content><![CDATA[
 # Intent
@@ -33,26 +33,11 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 ]]></content>
     </section>
 
-    <!-- Evaluation -->
-    <section id="eval-1" type="evaluation">
-      <content><![CDATA[
-## Success Criteria
-- End-to-end flow from **Intent → Evaluation → Process → Alternatives** is captured.
-- Measurable outcome: Onboarding completion **≥ ${qualityThreshold}** within 30 days of v1 launch.
-- Review checklist complete (Intent clarity, Criteria testability, Process coverage, Alternatives explored).
-
-### Acceptance Checks
-- [ ] Intent statement is specific and time-bound
-- [ ] Evaluation metrics are computable
-- [ ] Process covers critical steps
-- [ ] At least two Alternatives considered
-]]></content>
-    </section>
-
-    <!-- Process -->
+    <!-- 2. Main Process Section -->
     <section id="proc-1" type="process" refTarget="intent-1 eval-1">
       <content><![CDATA[
-## Process
+# Process
+
 1. **Audit current authoring UX**
 2. **Implement editor blocks**
    - CodeMirror (Markdown), per-block controls (Radix Popover/Dropdown)
@@ -63,13 +48,78 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 ]]></content>
     </section>
 
-    <!-- Alternatives -->
-    <section id="alts-1" type="alternatives">
+    <!-- 3. Alternative Process A: Zustand -->
+    <section id="proc-alt-zustand" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="1">
       <content><![CDATA[
-## Alternatives
-- **A.** Zustand store (light, modular)
-- **B.** Jotai atoms (granular, atomic)
-- **C.** Redux Toolkit (mature, centralized)
+# Process - Alternative A (Zustand)
+
+Use Zustand store for state management.
+
+**Benefits:**
+- Lightweight and modular
+- Minimal boilerplate
+- Easy to test
+
+**Implementation:**
+1. Create store with `create()` from zustand
+2. Define state slices for sections, flow, and metadata
+3. Use selectors for optimized re-renders
+]]></content>
+    </section>
+
+    <!-- 4. Alternative Process B: Jotai -->
+    <section id="proc-alt-jotai" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="2">
+      <content><![CDATA[
+# Process - Alternative B (Jotai)
+
+Use Jotai atoms for state management.
+
+**Benefits:**
+- Granular and atomic state
+- Excellent TypeScript support
+- Bottom-up approach
+
+**Implementation:**
+1. Define atoms for each piece of state
+2. Use derived atoms for computed values
+3. Leverage atom families for dynamic sections
+]]></content>
+    </section>
+
+    <!-- 5. Alternative Process C: Redux Toolkit -->
+    <section id="proc-alt-redux" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="3">
+      <content><![CDATA[
+# Process - Alternative C (Redux Toolkit)
+
+Use Redux Toolkit for state management.
+
+**Benefits:**
+- Mature and centralized
+- Excellent DevTools
+- Standardized patterns
+
+**Implementation:**
+1. Create slices with `createSlice()`
+2. Configure store with `configureStore()`
+3. Use RTK Query for async operations
+]]></content>
+    </section>
+
+    <!-- 6. Evaluation Section (LAST) -->
+    <section id="eval-1" type="evaluation">
+      <content><![CDATA[
+# Evaluation
+
+## Success Criteria
+- End-to-end flow from **Intent → Process → Alternatives → Evaluation** is captured.
+- Measurable outcome: Onboarding completion **≥ ${qualityThreshold}** within 30 days of v1 launch.
+- Review checklist complete (Intent clarity, Process coverage, Alternatives explored, Criteria testability).
+
+### Acceptance Checks
+- [ ] Intent statement is specific and time-bound
+- [ ] Process covers critical steps
+- [ ] At least two alternative processes considered
+- [ ] Evaluation metrics are computable
 ]]></content>
     </section>
   </sections>
@@ -80,15 +130,19 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
     <diagram><![CDATA[
 ```mermaid
 flowchart TD
-  A[Intent] --> B[Evaluation]
-  B --> C[Process]
-  C -->|Alt A| D[Alternative A]
-  C -->|Alt B| E[Alternative B]
+  A[Intent] --> B[Process]
+  B -->|Alt A| C[Alternative A: Zustand]
+  B -->|Alt B| D[Alternative B: Jotai]
+  B -->|Alt C| E[Alternative C: Redux]
+  C --> F[Evaluation]
+  D --> F
+  E --> F
   click A "#intent-1" "Jump to Intent"
-  click B "#eval-1" "Jump to Evaluation"
-  click C "#proc-1" "Jump to Process"
-  click D "#alts-1" "Jump to Alternatives"
-  click E "#alts-1" "Jump to Alternatives"
+  click B "#proc-1" "Jump to Process"
+  click C "#proc-alt-zustand" "Jump to Alternative A"
+  click D "#proc-alt-jotai" "Jump to Alternative B"
+  click E "#proc-alt-redux" "Jump to Alternative C"
+  click F "#eval-1" "Jump to Evaluation"
 ```
 ]]></diagram>
   </flow>
