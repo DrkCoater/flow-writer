@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import styled from "@emotion/styled";
-import { IconButton } from "@radix-ui/themes";
-import { SunIcon, MoonIcon } from "@radix-ui/react-icons";
-import { toggleTheme, selectTheme } from "../store/slices/globalSlice";
+import { IconButton, Tooltip } from "@radix-ui/themes";
+import { SunIcon, MoonIcon, Pencil1Icon, EyeOpenIcon } from "@radix-ui/react-icons";
+import { toggleTheme, selectTheme, setEditing, setPreviewing, selectIsEditing, selectIsPreviewing } from "../store/slices/globalSlice";
 import { colors, spacing, zIndices } from "../styles/tokens";
 
 const StyledToolbar = styled.div`
@@ -10,7 +10,7 @@ const StyledToolbar = styled.div`
   top: 0;
   left: 0;
   right: 0;
-  height: 28px;
+  height: 56px;
   background: ${colors.background.panel};
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -44,10 +44,31 @@ const ThemeToggle = styled(IconButton)`
 export function Toolbar() {
   const dispatch = useDispatch();
   const theme = useSelector(selectTheme);
+  const isEditing = useSelector(selectIsEditing);
+  const isPreviewing = useSelector(selectIsPreviewing);
 
   return (
     <StyledToolbar>
-      <ToolbarSection data-tauri-drag-region />
+      <ToolbarSection data-tauri-drag-region>
+        <Tooltip content="Edit">
+          <IconButton
+            size={1}
+            variant={isEditing ? "solid" : "soft"}
+            onClick={() => dispatch(setEditing())}
+          >
+            <Pencil1Icon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip content="Preview">
+          <IconButton
+            size={1}
+            variant={isPreviewing ? "solid" : "soft"}
+            onClick={() => dispatch(setPreviewing())}
+          >
+            <EyeOpenIcon />
+          </IconButton>
+        </Tooltip>
+      </ToolbarSection>
       <ToolbarSection $isCenter data-tauri-drag-region />
       <ToolbarSection $isRight>
         <ThemeToggle size="1" variant="ghost" onClick={() => dispatch(toggleTheme())}>

@@ -6,10 +6,12 @@ import { MarkdownBlock } from "./components/MarkdownBlock";
 import { Toolbar } from "./components/Toolbar";
 import { useContextDocument } from "./hooks/useContextDocument";
 import { sectionsToBlocks } from "./utils/sectionTransform";
-import { selectTheme } from "./store/slices/globalSlice";
+import { selectTheme, selectIsEditing, selectIsPreviewing } from "./store/slices/globalSlice";
 
 function App() {
   const theme = useSelector(selectTheme);
+  const isEditing = useSelector(selectIsEditing);
+  const isPreviewing = useSelector(selectIsPreviewing);
   const { sections, loading, error } = useContextDocument();
   const [blocks, setBlocks] = useState([]);
   const [nextId, setNextId] = useState(1);
@@ -109,7 +111,7 @@ function App() {
   };
 
   return (
-    <div style={{
+    <Theme appearance={theme} style={{
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
@@ -117,7 +119,7 @@ function App() {
       overflow: 'hidden'
     }}>
       <Toolbar />
-      <Theme appearance={theme} style={{
+      <div style={{
         flex: 1,
         overflow: 'auto',
         display: 'flex',
@@ -162,7 +164,7 @@ function App() {
                   key={block.id}
                   id={block.id}
                   content={block.content}
-                  isRendered={block.isRendered}
+                  isRendered={isPreviewing ? true : isEditing ? false : block.isRendered}
                   onContentChange={handleContentChange}
                   onToggleRender={handleToggleRender}
                   onDelete={handleDelete}
@@ -187,8 +189,8 @@ function App() {
             )}
           </div>
         </Flex>
-      </Theme>
-    </div>
+      </div>
+    </Theme>
   );
 }
 
