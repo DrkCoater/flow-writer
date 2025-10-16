@@ -26,7 +26,9 @@
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
     "react-redux": "^9.2.0",
-    "remark-gfm": "^4.0.1"
+    "rehype-pretty-code": "^0.14.1",
+    "remark-gfm": "^4.0.1",
+    "shiki": "^3.13.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
