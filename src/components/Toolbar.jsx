@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { IconButton, Tooltip } from "@radix-ui/themes";
 import { SunIcon, MoonIcon, Pencil1Icon, EyeOpenIcon } from "@radix-ui/react-icons";
-import { toggleTheme, selectTheme, setEditing, setPreviewing, selectIsEditing, selectIsPreviewing } from "../store/slices/globalSlice";
+import { toggleTheme, selectTheme, toggleEditing, togglePreviewing, selectIsEditing, selectIsPreviewing } from "../store/slices/globalSlice";
 import { colors, spacing, zIndices } from "../styles/tokens";
 
 const StyledToolbar = styled.div`
@@ -54,7 +54,7 @@ export function Toolbar() {
           <IconButton
             size={1}
             variant={isEditing ? "solid" : "soft"}
-            onClick={() => dispatch(setEditing())}
+            onClick={() => dispatch(toggleEditing())}
           >
             <Pencil1Icon />
           </IconButton>
@@ -63,7 +63,7 @@ export function Toolbar() {
           <IconButton
             size={1}
             variant={isPreviewing ? "solid" : "soft"}
-            onClick={() => dispatch(setPreviewing())}
+            onClick={() => dispatch(togglePreviewing())}
           >
             <EyeOpenIcon />
           </IconButton>

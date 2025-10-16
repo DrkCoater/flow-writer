@@ -16,18 +16,16 @@ const globalSlice = createSlice({
     setTheme: (state, action) => {
       state.theme = action.payload;
     },
-    setEditing: (state) => {
-      state.isEditing = true;
-      state.isPreviewing = false;
+    toggleEditing: (state) => {
+      state.isEditing = !state.isEditing;
     },
-    setPreviewing: (state) => {
-      state.isEditing = false;
-      state.isPreviewing = true;
+    togglePreviewing: (state) => {
+      state.isPreviewing = !state.isPreviewing;
     },
   },
 });
 
-export const { toggleTheme, setTheme, setEditing, setPreviewing } = globalSlice.actions;
+export const { toggleTheme, setTheme, toggleEditing, togglePreviewing } = globalSlice.actions;
 
 export const selectTheme = (state) => state.global.theme;
 export const selectIsEditing = (state) => state.global.isEditing;
