@@ -10,6 +10,12 @@ import { selectTheme, selectIsEditing, selectIsPreviewing } from "./store/slices
 import { loadDocument, selectLoading, selectError } from "./store/slices/documentSlice";
 import { colors, spacing } from "./styles/tokens";
 
+const ThemeWrapper = styled(Theme)`
+  height: 100%;
+  width: 100%;
+  display: block;
+`;
+
 const AppContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -37,10 +43,35 @@ const PanelsContainer = styled.div`
 const PanelWrapper = styled.div`
   width: 100%;
   height: 100%;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  overflow-x: hidden;
   border: 1px solid ${colors.border.subtle};
   border-radius: 8px;
   background-color: ${colors.background.elevated};
+  
+  /* For WebKit browsers (Chrome, Safari, newer Edge) */
+  &::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${colors.background.elevated};
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${colors.border.default};
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${colors.text.tertiary};
+  }
+  
+  /* For Firefox */
+  scrollbar-width: auto;
+  scrollbar-color: ${colors.border.default} ${colors.background.elevated};
 `;
 
 const EmptyPanel = styled.div`
@@ -93,10 +124,9 @@ function App() {
   const neitherActive = !isEditing && !isPreviewing;
 
   return (
-    <Theme appearance={theme}>
+    <ThemeWrapper appearance={theme}>
       <AppContainer>
         <Toolbar />
-
         <ContentArea>
           {loading && (
             <LoadingContainer>
@@ -105,44 +135,37 @@ function App() {
           )}
 
           {error && (
-            <Callout.Root color="red" style={{ marginBottom: spacing.lg }}>
+            <Callout.Root color="red" style={{ marginBottom: "1rem" }}>
               <Callout.Icon>
                 <ExclamationTriangleIcon />
               </Callout.Icon>
-              <Callout.Text>
-                <strong>Error loading document:</strong> {error}
-              </Callout.Text>
+              <Callout.Text>{error}</Callout.Text>
             </Callout.Root>
           )}
 
-          {!loading && !error && (
-            <PanelsContainer $bothActive={bothActive}>
-              {isEditing && (
-                <PanelWrapper>
-                  <EditPanel />
-                </PanelWrapper>
-              )}
-
-              {isPreviewing && (
-                <PanelWrapper>
-                  <PreviewPanel />
-                </PanelWrapper>
-              )}
-
-              {neitherActive && (
-                <EmptyPanel>
-                  <h3>No Panel Active</h3>
-                  <p>
-                    Enable Edit or Preview mode from the toolbar above<br />
-                    to start working with your document.
-                  </p>
-                </EmptyPanel>
-              )}
-            </PanelsContainer>
+          {neitherActive && (
+            <EmptyPanel>
+              <h3>No Panel Active</h3>
+              <p>Click "Edit" or "Preview" in the toolbar to begin.</p>
+            </EmptyPanel>
           )}
+
+          <PanelsContainer $bothActive={bothActive}>
+            {isEditing && (
+              <PanelWrapper>
+                <EditPanel />
+              </PanelWrapper>
+            )}
+            
+            {isPreviewing && (
+              <PanelWrapper>
+                <PreviewPanel />
+              </PanelWrapper>
+            )}
+          </PanelsContainer>
         </ContentArea>
       </AppContainer>
-    </Theme>
+    </ThemeWrapper>
   );
 }
 
