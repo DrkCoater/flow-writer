@@ -112,3 +112,57 @@ return (
 **The Radix UI Theme component does not pass through height by default and breaks the CSS height chain. It must be styled with emotion/styled-components to maintain height: 100%.**
 
 **Date:** October 16, 2025
+
+---
+
+## Flex Container Scrollbar Fix - flexShrink: 0
+
+### Problem
+When using `display: flex; flex-direction: column` with `overflow-y: scroll`, child elements shrink to fit the container height even when they have explicit `height` values set.
+
+### Root Cause
+**Flex items have `flex-shrink: 1` by default.** This allows the flex container to compress child items to fit within the container's height constraint, overriding explicit height values.
+
+### Solution
+Add `flex-shrink: 0` to child elements that should maintain their explicit height in scrollable flex containers.
+
+```jsx
+const BlockContainer = styled.div`
+  width: 100%;
+  height: auto;
+  flex-shrink: 0;  // Prevents shrinking in flex parent
+  /* other styles... */
+`;
+```
+
+### Example Scenario
+```jsx
+// Parent: Scrollable flex container
+const PanelWrapper = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+`;
+
+// Child: Content blocks
+const BlockContainer = styled.div`
+  height: 200px;  // Won't work without flex-shrink: 0
+  flex-shrink: 0;  // REQUIRED: Maintains 200px height
+`;
+```
+
+### When to Apply
+- Any child element inside a flex container with `overflow-y: scroll` or `overflow-x: scroll`
+- When child elements have explicit `height` or `width` values that must be maintained
+- When scrolling should be triggered by content overflow, not by shrinking content to fit
+
+### Key Insight
+The flex container's overflow behavior works correctly only when:
+1. Container has fixed height (`height: 100%`)
+2. Container has `overflow-y: scroll`
+3. **Children have `flex-shrink: 0`** ← Critical missing piece!
+
+Without `flex-shrink: 0`, the flex algorithm will compress children to fit the container, preventing overflow and thus preventing scrollbars from appearing.
+
+**Date:** October 17, 2025

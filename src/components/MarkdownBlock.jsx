@@ -19,6 +19,7 @@ const BlockContainer = styled.div`
   overflow: hidden;
   margin: ${spacing.xxl} 0 ${spacing.lg} 0;
   background-color: ${colors.background.elevated};
+  flex-shrink: 0;
 `;
 
 const PreviewContainer = styled.div`
