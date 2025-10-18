@@ -156,7 +156,7 @@ function App() {
                 <EditPanel />
               </PanelWrapper>
             )}
-            
+
             {isPreviewing && (
               <PanelWrapper>
                 <PreviewPanel />

@@ -32,10 +32,6 @@ export function EditPanel() {
     setBlocks(blocks.map((block) => (block.id === id ? { ...block, content: newContent } : block)));
   };
 
-  const handleToggleRender = (id) => {
-    setBlocks(blocks.map((block) => (block.id === id ? { ...block, isRendered: !block.isRendered } : block)));
-  };
-
   const handleDelete = (id) => {
     if (blocks.length > 1) {
       setBlocks(blocks.filter((block) => block.id !== id));
@@ -65,7 +61,6 @@ export function EditPanel() {
     const newBlock = {
       id: `new-${nextId}`,
       content: "## New Block, start editing...",
-      isRendered: false,
       sectionId: `new-${nextId}`,
       sectionType: "notes"
     };
@@ -102,7 +97,6 @@ export function EditPanel() {
       {
         id: `new-${nextId}`,
         content: "## New Block, start editing...",
-        isRendered: false,
         sectionId: `new-${nextId}`,
         sectionType: "notes"
       }
@@ -124,9 +118,7 @@ export function EditPanel() {
             key={block.id}
             id={block.id}
             content={block.content}
-            isRendered={block.isRendered}
             onContentChange={handleContentChange}
-            onToggleRender={handleToggleRender}
             onDelete={handleDelete}
             onMoveUp={handleMoveUp}
             onMoveDown={handleMoveDown}
