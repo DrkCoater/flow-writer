@@ -6,6 +6,7 @@
   overflow-y: scroll;
   overflow-x: hidden;
   background-color: var(--gray-2);
+  padding: 2rem;
 
   /* For WebKit browsers (Chrome, Safari, newer Edge) */
   &::-webkit-scrollbar {
