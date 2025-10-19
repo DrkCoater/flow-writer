@@ -1,0 +1,2 @@
+- [ ] stripe down the preview panel to be the only child of App.jsx to see if scrollbar appears and works correctly and work the way up.
+- [ ] do the same for edit panel

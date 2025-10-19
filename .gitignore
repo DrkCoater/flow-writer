@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 # Claude Code
-CLAUDE.md
+# CLAUDE.md
+# knowledge-docs/
 .claude/
-knowledge-docs/
 /external/

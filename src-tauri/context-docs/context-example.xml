@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<context version="1.0">
+  <meta>
+    <title>Context Engineering Canvas — Example</title>
+    <author>Example Author</author>
+    <created>2025-10-09T20:20:32.902425+00:00</created>
+    <app name="CEC" version="0.1.0"/>
+    <tags>context, engineering, markdown, xml, mermaid</tags>
+    <description>Minimal XML wrapper with Markdown content and Mermaid flow, designed for a JS/React editor.</description>
+  </meta>
+
+  <variables>
+    <var name="userName">Jeremy</var>
+    <var name="goal">Ship the v1 Context Editor</var>
+    <var name="deadline">2025-11-01</var>
+    <var name="qualityThreshold">85%</var>
+  </variables>
+
+  <sections>
+    <!-- 1. Intent Section (FIRST) -->
+    <section id="intent-1" type="intent">
+      <content><![CDATA[
+# Intent
+We aim to **${goal}** by **${deadline}** for **${userName}**.
+
+**Why now?**
+- Consolidate context engineering practices into one workspace.
+- Enable per-block AI actions (revise, tone, grammar, query).
+
+**Out of scope (v1):**
+- Multi-user real-time collaboration
+- TypeScript types (JavaScript-only project)
+]]></content>
+    </section>
+
+    <!-- 2. Main Process Section -->
+    <section id="proc-1" type="process" refTarget="intent-1 eval-1">
+      <content><![CDATA[
+# Process
+
+1. **Audit current authoring UX**
+2. **Implement editor blocks**
+   - CodeMirror (Markdown), per-block controls (Radix Popover/Dropdown)
+3. **Wire XML↔MD loader/saver**
+4. **Add AI actions per block** (revise, tone, grammar, query)
+5. **Add progress tracking stepper**
+6. **Render flow diagram**
+]]></content>
+    </section>
+
+    <!-- 3. Alternative Process A: Zustand -->
+    <section id="proc-alt-zustand" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="1">
+      <content><![CDATA[
+# Process - Alternative A (Zustand)
+
+Use Zustand store for state management.
+
+**Benefits:**
+- Lightweight and modular
+- Minimal boilerplate
+- Easy to test
+
+**Implementation:**
+1. Create store with `create()` from zustand
+2. Define state slices for sections, flow, and metadata
+3. Use selectors for optimized re-renders
+]]></content>
+    </section>
+
+    <!-- 4. Alternative Process B: Jotai -->
+    <section id="proc-alt-jotai" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="2">
+      <content><![CDATA[
+# Process - Alternative B (Jotai)
+
+Use Jotai atoms for state management.
+
+**Benefits:**
+- Granular and atomic state
+- Excellent TypeScript support
+- Bottom-up approach
+
+**Implementation:**
+1. Define atoms for each piece of state
+2. Use derived atoms for computed values
+3. Leverage atom families for dynamic sections
+]]></content>
+    </section>
+
+    <!-- 5. Alternative Process C: Redux Toolkit -->
+    <section id="proc-alt-redux" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="3">
+      <content><![CDATA[
+# Process - Alternative C (Redux Toolkit)
+
+Use Redux Toolkit for state management.
+
+**Benefits:**
+- Mature and centralized
+- Excellent DevTools
+- Standardized patterns
+
+**Implementation:**
+1. Create slices with `createSlice()`
+2. Configure store with `configureStore()`
+3. Use RTK Query for async operations
+]]></content>
+    </section>
+
+    <!-- 6. Evaluation Section (LAST) -->
+    <section id="eval-1" type="evaluation">
+      <content><![CDATA[
+# Evaluation
+
+## Success Criteria
+- End-to-end flow from **Intent → Process → Alternatives → Evaluation** is captured.
+- Measurable outcome: Onboarding completion **≥ ${qualityThreshold}** within 30 days of v1 launch.
+- Review checklist complete (Intent clarity, Process coverage, Alternatives explored, Criteria testability).
+
+### Acceptance Checks
+- [ ] Intent statement is specific and time-bound
+- [ ] Process covers critical steps
+- [ ] At least two alternative processes considered
+- [ ] Evaluation metrics are computable
+]]></content>
+    </section>
+  </sections>
+
+  <!-- Flow Graph - Separate top-level element -->
+  <flow id="flow-1" version="1.0">
+    <title>Document Flow</title>
+    <diagram><![CDATA[
+```mermaid
+flowchart TD
+  A[Intent] --> B[Process]
+  B -->|Alt A| C[Alternative A: Zustand]
+  B -->|Alt B| D[Alternative B: Jotai]
+  B -->|Alt C| E[Alternative C: Redux]
+  C --> F[Evaluation]
+  D --> F
+  E --> F
+  click A "#intent-1" "Jump to Intent"
+  click B "#proc-1" "Jump to Process"
+  click C "#proc-alt-zustand" "Jump to Alternative A"
+  click D "#proc-alt-jotai" "Jump to Alternative B"
+  click E "#proc-alt-redux" "Jump to Alternative C"
+  click F "#eval-1" "Jump to Evaluation"
+```
+]]></diagram>
+  </flow>
+</context>

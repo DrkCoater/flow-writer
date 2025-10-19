@@ -13,8 +13,9 @@
     "windows": [
       {
         "title": "flow-writer",
-        "width": 800,
-        "height": 600
+        "width": 1400,
+        "height": 900,
+        "titleBarStyle": "Overlay"
       }
     ],
     "security": {
@@ -30,6 +31,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "resources": [
+      "context-docs/*"
     ]
   }
 }

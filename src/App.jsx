@@ -1,114 +1,85 @@
-import { Theme, Flex, Heading, Button } from '@radix-ui/themes';
-import { useState } from 'react';
-import { MarkdownBlock } from './components/MarkdownBlock';
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import styled from "@emotion/styled";
+import { Theme, Spinner, Callout } from "@radix-ui/themes";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { Toolbar } from "@/components/Toolbar";
+import { EditPanel } from "@/components/EditPanel";
+import { PreviewPanel } from "@/components/PreviewPanel";
+import { selectTheme, selectIsEditing, selectIsPreviewing } from "@/store/slices/globalSlice";
+import { loadDocument, selectLoading, selectError } from "@/store/slices/documentSlice";
+import "@styles/app.scss";
+
+const ThemeWrapper = styled(Theme)`
+  height: 100%;
+  width: 100%;
+  display: block;
+`;
 
 function App() {
-  const [blocks, setBlocks] = useState([
-    {
-      id: 1,
-      content: '# This is a block-based markdown editor.',
-      isRendered: true
-    },
-    {
-      id: 2,
-      content: '## Features\n\n- Edit markdown block by block\n- Toggle between edit and preview mode\n- Add, delete, and reorder blocks\n- GitHub Flavored Markdown support',
-      isRendered: false
-    }
-  ]);
+  const dispatch = useDispatch();
+  const theme = useSelector(selectTheme);
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
+  const isEditing = useSelector(selectIsEditing);
+  const isPreviewing = useSelector(selectIsPreviewing);
 
-  const [nextId, setNextId] = useState(3);
+  useEffect(() => {
+    dispatch(loadDocument());
+  }, [dispatch]);
 
-  const handleContentChange = (id, newContent) => {
-    setBlocks(blocks.map(block =>
-      block.id === id ? { ...block, content: newContent } : block
-    ));
-  };
-
-  const handleToggleRender = (id) => {
-    setBlocks(blocks.map(block =>
-      block.id === id ? { ...block, isRendered: !block.isRendered } : block
-    ));
-  };
-
-  const handleDelete = (id) => {
-    if (blocks.length > 1) {
-      setBlocks(blocks.filter(block => block.id !== id));
-    }
-  };
-
-  const handleMoveUp = (id) => {
-    const index = blocks.findIndex(block => block.id === id);
-    if (index > 0) {
-      const newBlocks = [...blocks];
-      [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
-      setBlocks(newBlocks);
-    }
-  };
-
-  const handleMoveDown = (id) => {
-    const index = blocks.findIndex(block => block.id === id);
-    if (index < blocks.length - 1) {
-      const newBlocks = [...blocks];
-      [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
-      setBlocks(newBlocks);
-    }
-  };
-
-  const handleAddBelow = (id) => {
-    const index = blocks.findIndex(block => block.id === id);
-    const newBlock = {
-      id: nextId,
-      content: '# New Block\n\nStart editing here...',
-      isRendered: false
-    };
-    const newBlocks = [...blocks];
-    newBlocks.splice(index + 1, 0, newBlock);
-    setBlocks(newBlocks);
-    setNextId(nextId + 1);
-  };
-
-  const handleAddBlock = () => {
-    setBlocks([...blocks, {
-      id: nextId,
-      content: '# New Block\n\nStart editing here...',
-      isRendered: false
-    }]);
-    setNextId(nextId + 1);
-  };
+  const bothActive = isEditing && isPreviewing;
+  const neitherActive = !isEditing && !isPreviewing;
 
   return (
-    <Theme appearance="dark">
-      <Flex direction="column" align="center" gap="4" style={{ minHeight: '100vh', padding: '40px' }}>
+    <ThemeWrapper appearance={theme}>
+      <div className="app-container">
+        <Toolbar />
+        <div className="content-area">
+          {loading && (
+            <div className="loading-container">
+              <Spinner size="3" />
+            </div>
+          )}
 
-        <div style={{ width: '100%', maxWidth: '900px' }}>
-          {blocks.map((block, index) => (
-            <MarkdownBlock
-              key={block.id}
-              id={block.id}
-              content={block.content}
-              isRendered={block.isRendered}
-              onContentChange={handleContentChange}
-              onToggleRender={handleToggleRender}
-              onDelete={handleDelete}
-              onMoveUp={handleMoveUp}
-              onMoveDown={handleMoveDown}
-              onAddBelow={handleAddBelow}
-              isFirst={index === 0}
-              isLast={index === blocks.length - 1}
-            />
-          ))}
+          {error && (
+            <Callout.Root color="red" style={{ marginBottom: "1rem" }}>
+              <Callout.Icon>
+                <ExclamationTriangleIcon />
+              </Callout.Icon>
+              <Callout.Text>{error}</Callout.Text>
+            </Callout.Root>
+          )}
 
-          <Button
-            size="3"
-            variant="soft"
-            style={{ width: '100%', marginTop: '16px' }}
-            onClick={handleAddBlock}
-          >
-            + Add New Block
-          </Button>
+          {neitherActive && (
+            <div className="empty-panel">
+              <h3>No Panel Active</h3>
+              <p>Click "Edit" or "Preview" in the toolbar to begin.</p>
+            </div>
+          )}
+
+          <div className="panels-container">
+            {bothActive ? (
+              <PanelGroup direction="horizontal">
+                <Panel defaultSize={50} minSize={20}>
+                  <EditPanel />
+                </Panel>
+                <PanelResizeHandle className="resize-handle" />
+                <Panel defaultSize={50} minSize={20}>
+                  <PreviewPanel />
+                </Panel>
+              </PanelGroup>
+            ) : (
+              <>
+                {isEditing && <EditPanel />}
+                {isPreviewing && <PreviewPanel />}
+              </>
+            )}
+          </div>
         </div>
-      </Flex>
-    </Theme>
+      </div>
+    </ThemeWrapper>
   );
 }
 
