@@ -38,8 +38,8 @@ const EditorWrapper = styled.div`
 
   /* Ultra-thin slick scrollbars for CodeMirror */
   .cm-scroller::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
+    width: 10px;
+    height: 10px;
   }
 
   .cm-scroller::-webkit-scrollbar-track {
