@@ -2,10 +2,10 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { Button, Flex, Tooltip, IconButton, DropdownMenu, TextField, Badge } from "@radix-ui/themes";
-import { PlayIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@radix-ui/react-icons";
+import { PlayIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon, TextAlignLeftIcon } from "@radix-ui/react-icons";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
-import { keymap } from "@codemirror/view";
+import { keymap, EditorView } from "@codemirror/view";
 import { getSectionTypeColor, formatSectionType } from "@/utils/sectionTransform";
 import { selectTheme } from "@/store/slices/globalSlice";
 import { colors, spacing, radii } from "@styles/tokens";
@@ -25,17 +25,60 @@ const EditorWrapper = styled.div`
   display: flex;
   flex-direction: column;
   min-height: ${props => `${props.$minLines * 1.5}em`};
+  height: ${props => props.$height || 'auto'};
 
   .cm-editor {
     height: auto;
   }
 
   .cm-scroller {
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: ${props => props.$height && props.$height !== 'auto' ? 'auto' : 'visible'};
   }
 `;
 
+const ResizeHandle = styled.div`
+  position: relative;
+  width: 100%;
+  height: 8px;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${colors.background.elevated};
+  border-top: 1px solid ${colors.border.default};
+  transition: background-color 0.2s ease;
+  user-select: none;
+
+  &::before {
+    content: '⋮⋮';
+    font-size: 10px;
+    color: ${colors.text.tertiary};
+    letter-spacing: 2px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover {
+    background-color: ${colors.background.hover};
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  ${props => props.$isResizing && `
+    background-color: ${colors.background.hover};
+
+    &::before {
+      opacity: 1;
+    }
+  `}
+`;
+
 const ActionButtons = styled(Flex)`
+  position: relative;
+  z-index: 1;
   padding: ${spacing.sm};
   border-top: 1px solid ${colors.border.default};
   background-color: ${colors.background.elevated};
@@ -62,6 +105,9 @@ export function MarkdownBlock({
   const theme = useSelector(selectTheme);
   const [showCustomAsk, setShowCustomAsk] = useState(false);
   const [customQuery, setCustomQuery] = useState("");
+  const [blockHeight, setBlockHeight] = useState('auto');
+  const [isResizing, setIsResizing] = useState(false);
+  const [isWordWrapEnabled, setIsWordWrapEnabled] = useState(false);
   const codeMirrorViewRef = useRef(null);
   const editorWrapperRef = useRef(null);
 
@@ -107,6 +153,40 @@ export function MarkdownBlock({
     keyResetTimerRef.current = setTimeout(() => {
       resetKeyCounters();
     }, 500);
+  };
+
+  // Resize handlers
+  const handleResizeStart = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+
+    const startY = e.clientY;
+    const startHeight = editorWrapperRef.current?.offsetHeight || 0;
+
+    const handleMouseMove = (moveEvent) => {
+      const deltaY = moveEvent.clientY - startY;
+      const minHeight = minLines * 1.5 * 16; // 16px base font size
+
+      // Get actual content height from CodeMirror
+      const contentHeight = codeMirrorViewRef.current?.contentDOM?.scrollHeight || Infinity;
+
+      // Clamp between min height and content height
+      const newHeight = Math.max(minHeight, Math.min(contentHeight, startHeight + deltaY));
+      setBlockHeight(`${newHeight}px`);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
   };
 
   // Custom keymap extension for special key behaviors
@@ -159,8 +239,12 @@ export function MarkdownBlock({
   }, [id, isFirst, isLast, onNavigateToPrevious, onNavigateToNext]);
 
   const extensions = useMemo(() => {
-    return [markdown(), customKeymap];
-  }, [customKeymap]);
+    return [
+      markdown(),
+      customKeymap,
+      ...(isWordWrapEnabled ? [EditorView.lineWrapping] : [])
+    ];
+  }, [customKeymap, isWordWrapEnabled]);
 
   const handleReviseAction = (action) => {
     if (action === "custom-ask") {
@@ -186,6 +270,15 @@ export function MarkdownBlock({
         </Flex>
 
         <Flex gap="2">
+          <Tooltip content="Toggle Word Wrap">
+            <IconButton
+              size="1"
+              variant={isWordWrapEnabled ? "solid" : "soft"}
+              onClick={() => setIsWordWrapEnabled(!isWordWrapEnabled)}
+            >
+              <TextAlignLeftIcon />
+            </IconButton>
+          </Tooltip>
           <Tooltip content="Add Block">
             <IconButton size="1" variant="soft" onClick={() => onAddBelow(id)}>
               <PlusIcon />
@@ -212,6 +305,7 @@ export function MarkdownBlock({
       <EditorWrapper
         ref={editorWrapperRef}
         $minLines={minLines}
+        $height={blockHeight}
       >
         <CodeMirror
           value={content}
@@ -224,6 +318,11 @@ export function MarkdownBlock({
           }}
         />
       </EditorWrapper>
+
+      <ResizeHandle
+        $isResizing={isResizing}
+        onMouseDown={handleResizeStart}
+      />
 
       <ActionButtons gap="2" align="center">
         {showCustomAsk && (
