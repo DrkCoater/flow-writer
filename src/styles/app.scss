@@ -36,7 +36,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     width: 2px;
-    height: 10rem;
+    height: 100%; // global resize handle height, 10rem is also very nice
     background-color: var(--accent-9);
     border-radius: 2px;
     opacity: 0;

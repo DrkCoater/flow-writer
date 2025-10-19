@@ -4,6 +4,20 @@
 
 - [Tauri Middleware Architecture](knowledge-docs/architecture/tauri-middleware-architecture.md) - Comprehensive architecture for parsing XML context documents and serving markdown sections to the frontend's CodeMirror editor
 
+## Platform Target
+
+**This is a Tauri Desktop Application**
+
+- **Target Platform:** Tauri desktop app ONLY (not a web browser app)
+- **Optimization Priority:** Lightweight and fast performance
+- **Browser Support:** DO NOT add extra browser compatibility code or polyfills
+- **Rendering Engine:** Modern WebView (WebKit on macOS, WebView2 on Windows, WebKitGTK on Linux)
+- **CSS Support:** Use modern CSS features without fallbacks - no need for `-webkit-`, `-moz-`, `-ms-` prefixes unless specifically required by the Tauri WebView
+- **JavaScript Features:** Use modern ES6+ features without transpilation concerns
+- **Scrollbar Styling:** Use `::-webkit-scrollbar` for custom scrollbars (WebView supports this natively)
+
+**Key Principle:** Keep the codebase lean. Avoid adding code for cross-browser compatibility that would be necessary for web deployment.
+
 ## Development Guidelines
 
 ### Test-Driven Development (TDD)
