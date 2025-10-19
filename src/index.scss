@@ -1,5 +1,12 @@
 @import '@radix-ui/themes/styles.css';
 
+/* Ensure box-sizing is applied globally (Radix should provide this, but adding as fallback) */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body,
 #root {

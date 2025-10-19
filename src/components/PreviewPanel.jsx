@@ -50,9 +50,9 @@ export function PreviewPanel() {
 
   return (
     <PanelWrapper>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-        {combinedContent}
-      </ReactMarkdown>
+      <div style={{ paddingLeft: "2rem" }}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{combinedContent}</ReactMarkdown>
+      </div>
     </PanelWrapper>
   );
 }
