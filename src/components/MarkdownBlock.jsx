@@ -10,6 +10,17 @@ import { getSectionTypeColor, formatSectionType } from "@/utils/sectionTransform
 import { selectTheme } from "@/store/slices/globalSlice";
 import { colors, spacing, radii } from "@styles/tokens";
 
+// Theme-specific background colors for CodeMirror editor
+const THEME_COLORS = {
+  dark: 'rgb(41, 44, 52)',
+  light: 'rgb(250, 250, 250)'
+};
+
+// CodeMirror sizing constants
+const LINE_HEIGHT_MULTIPLIER = 1.5;
+const BASE_FONT_SIZE = 16;
+
+// Styled Components
 const BlockContainer = styled.div`
   width: 100%;
   border: 1px solid ${colors.border.default};
@@ -24,16 +35,24 @@ const EditorWrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: ${props => `${props.$minLines * 1.5}em`};
+  min-height: ${props => `${props.$minLines * LINE_HEIGHT_MULTIPLIER}em`};
   height: ${props => props.$height || 'auto'};
+  overflow: ${props => props.$height && props.$height !== 'auto' ? 'hidden' : 'visible'};
 
   .cm-editor {
-    height: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .cm-scroller {
     overflow-x: auto;
     overflow-y: ${props => props.$height && props.$height !== 'auto' ? 'auto' : 'visible'};
+    flex: 1;
+    min-height: 0;
+  }
+
+  .cm-content {
+    ${props => props.$height && props.$height !== 'auto' ? 'max-height: none;' : ''}
   }
 `;
 
@@ -42,35 +61,35 @@ const ResizeHandle = styled.div`
   width: 100%;
   height: 8px;
   cursor: ns-resize;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${colors.background.elevated};
-  border-top: 1px solid ${colors.border.default};
-  transition: background-color 0.2s ease;
-  user-select: none;
+  background-color: ${props => THEME_COLORS[props.$theme]};
 
-  &::before {
-    content: '⋮⋮';
-    font-size: 10px;
-    color: ${colors.text.tertiary};
-    letter-spacing: 2px;
-    opacity: 0.5;
-    transition: opacity 0.2s ease;
+  // The actual visible bar (centered within the hit area)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10rem;
+    height: 2px;
+    background-color: var(--accent-9);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
   }
 
-  &:hover {
-    background-color: ${colors.background.hover};
+  &:hover::after {
+    opacity: 1;
+  }
 
-    &::before {
-      opacity: 1;
-    }
+  &:active::after {
+    background-color: var(--accent-11);
+    opacity: 1;
   }
 
   ${props => props.$isResizing && `
-    background-color: ${colors.background.hover};
-
-    &::before {
+    &::after {
+      background-color: var(--accent-11);
       opacity: 1;
     }
   `}
@@ -84,6 +103,17 @@ const ActionButtons = styled(Flex)`
   background-color: ${colors.background.elevated};
 `;
 
+const BlockHeader = styled(Flex)`
+  padding: 8px 12px;
+`;
+
+const SectionIdText = styled.span`
+  font-size: 12px;
+  color: var(--gray-10);
+  font-family: monospace;
+`;
+
+// Component
 export function MarkdownBlock({
   id,
   content,
@@ -110,12 +140,11 @@ export function MarkdownBlock({
   const [isWordWrapEnabled, setIsWordWrapEnabled] = useState(false);
   const codeMirrorViewRef = useRef(null);
   const editorWrapperRef = useRef(null);
-
-  // Key press tracking
   const arrowUpCountRef = useRef(0);
   const arrowDownCountRef = useRef(0);
   const keyResetTimerRef = useRef(null);
 
+  // Effects
   // Set cursor position and focus after navigation
   useEffect(() => {
     if (shouldFocus && focusCursorPosition !== null && codeMirrorViewRef.current) {
@@ -135,7 +164,8 @@ export function MarkdownBlock({
     }
   }, [shouldFocus, focusCursorPosition, id]);
 
-  // Helper to reset key counters
+  // Helper Functions
+  // Reset arrow key press counters
   const resetKeyCounters = () => {
     arrowUpCountRef.current = 0;
     arrowDownCountRef.current = 0;
@@ -155,7 +185,8 @@ export function MarkdownBlock({
     }, 500);
   };
 
-  // Resize handlers
+  // Event Handlers
+  // Handle resize drag interaction
   const handleResizeStart = (e) => {
     e.preventDefault();
     setIsResizing(true);
@@ -165,7 +196,7 @@ export function MarkdownBlock({
 
     const handleMouseMove = (moveEvent) => {
       const deltaY = moveEvent.clientY - startY;
-      const minHeight = minLines * 1.5 * 16; // 16px base font size
+      const minHeight = minLines * LINE_HEIGHT_MULTIPLIER * BASE_FONT_SIZE;
 
       // Get actual content height from CodeMirror
       const contentHeight = codeMirrorViewRef.current?.contentDOM?.scrollHeight || Infinity;
@@ -189,7 +220,17 @@ export function MarkdownBlock({
     document.body.style.cursor = 'ns-resize';
   };
 
-  // Custom keymap extension for special key behaviors
+  const handleReviseAction = (action) => {
+    if (action === "custom-ask") {
+      setShowCustomAsk(true);
+    } else {
+      setShowCustomAsk(false);
+      console.log("Revise action:", action);
+    }
+  };
+
+  // CodeMirror Extensions
+  // Custom keymap for block navigation
   const customKeymap = useMemo(() => {
     return keymap.of([
       {
@@ -238,26 +279,32 @@ export function MarkdownBlock({
     ]);
   }, [id, isFirst, isLast, onNavigateToPrevious, onNavigateToNext]);
 
+  // Custom theme to override light mode background color
+  const customTheme = useMemo(() => {
+    if (theme === 'light') {
+      const lightBg = THEME_COLORS.light;
+      return EditorView.theme({
+        '&': { backgroundColor: lightBg },
+        '.cm-content': { backgroundColor: lightBg },
+        '.cm-gutters': { backgroundColor: lightBg }
+      });
+    }
+    return [];
+  }, [theme]);
+
   const extensions = useMemo(() => {
     return [
       markdown(),
       customKeymap,
-      ...(isWordWrapEnabled ? [EditorView.lineWrapping] : [])
+      ...(isWordWrapEnabled ? [EditorView.lineWrapping] : []),
+      ...(Array.isArray(customTheme) ? customTheme : [customTheme])
     ];
-  }, [customKeymap, isWordWrapEnabled]);
+  }, [customKeymap, isWordWrapEnabled, customTheme]);
 
-  const handleReviseAction = (action) => {
-    if (action === "custom-ask") {
-      setShowCustomAsk(true);
-    } else {
-      setShowCustomAsk(false);
-      console.log("Revise action:", action);
-    }
-  };
-
+  // Render
   return (
     <BlockContainer>
-      <Flex justify="between" align="center" style={{ padding: "8px 12px" }}>
+      <BlockHeader justify="between" align="center">
         <Flex gap="2" align="center">
           {sectionType && (
             <Badge color={getSectionTypeColor(sectionType)} size="1">
@@ -265,7 +312,7 @@ export function MarkdownBlock({
             </Badge>
           )}
           {sectionId && (
-            <span style={{ fontSize: "12px", color: "var(--gray-10)", fontFamily: "monospace" }}>{sectionId}</span>
+            <SectionIdText>{sectionId}</SectionIdText>
           )}
         </Flex>
 
@@ -300,7 +347,7 @@ export function MarkdownBlock({
             </IconButton>
           </Tooltip>
         </Flex>
-      </Flex>
+      </BlockHeader>
 
       <EditorWrapper
         ref={editorWrapperRef}
@@ -309,7 +356,7 @@ export function MarkdownBlock({
       >
         <CodeMirror
           value={content}
-          height="auto"
+          height={blockHeight}
           theme={theme}
           extensions={extensions}
           onChange={(value) => onContentChange(id, value)}
@@ -320,6 +367,7 @@ export function MarkdownBlock({
       </EditorWrapper>
 
       <ResizeHandle
+        $theme={theme}
         $isResizing={isResizing}
         onMouseDown={handleResizeStart}
       />
