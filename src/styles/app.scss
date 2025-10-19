@@ -21,11 +21,35 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+}
 
-  &.both-active {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+.resize-handle {
+  position: relative;
+  width: 8px;
+  cursor: col-resize;
+
+  // The actual visible bar (centered within the hit area)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 8rem;
+    background-color: var(--accent-9);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+
+  &:active::after {
+    background-color: var(--accent-11);
+    opacity: 1;
   }
 }
 

@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import styled from "@emotion/styled";
 import { Theme, Spinner, Callout } from "@radix-ui/themes";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Toolbar } from "@/components/Toolbar";
 import { EditPanel } from "@/components/EditPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
@@ -58,9 +59,23 @@ function App() {
             </div>
           )}
 
-          <div className={bothActive ? "panels-container both-active" : "panels-container"}>
-            {isEditing && <EditPanel />}
-            {isPreviewing && <PreviewPanel />}
+          <div className="panels-container">
+            {bothActive ? (
+              <PanelGroup direction="horizontal">
+                <Panel defaultSize={50} minSize={20}>
+                  <EditPanel />
+                </Panel>
+                <PanelResizeHandle className="resize-handle" />
+                <Panel defaultSize={50} minSize={20}>
+                  <PreviewPanel />
+                </Panel>
+              </PanelGroup>
+            ) : (
+              <>
+                {isEditing && <EditPanel />}
+                {isPreviewing && <PreviewPanel />}
+              </>
+            )}
           </div>
         </div>
       </div>
