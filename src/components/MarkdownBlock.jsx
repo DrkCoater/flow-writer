@@ -33,26 +33,26 @@ const BlockContainer = styled.div`
 
 const EditorWrapper = styled.div`
   position: relative;
-  display: flex;
-  flex-direction: column;
   min-height: ${props => `${props.$minLines * LINE_HEIGHT_MULTIPLIER}em`};
   height: ${props => props.$height || 'auto'};
-  overflow: ${props => props.$height && props.$height !== 'auto' ? 'hidden' : 'visible'};
 
-  .cm-editor {
-    display: flex;
-    flex-direction: column;
+  /* Ultra-thin slick scrollbars for CodeMirror */
+  .cm-scroller::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
   }
 
-  .cm-scroller {
-    overflow-x: auto;
-    overflow-y: ${props => props.$height && props.$height !== 'auto' ? 'auto' : 'visible'};
-    flex: 1;
-    min-height: 0;
+  .cm-scroller::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  .cm-content {
-    ${props => props.$height && props.$height !== 'auto' ? 'max-height: none;' : ''}
+  .cm-scroller::-webkit-scrollbar-thumb {
+    background: var(--gray-7);
+    border-radius: 2px;
+
+    &:hover {
+      background: var(--accent-9);
+    }
   }
 `;
 
