@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Button, Callout } from "@radix-ui/themes";
-import { MarkdownBlock } from "./MarkdownBlock";
-import { selectSections, selectLoading, selectError } from "../store/slices/documentSlice";
-import { sectionsToBlocks } from "../utils/sectionTransform";
+import { MarkdownBlock } from "@/components/MarkdownBlock";
+import { selectSections, selectLoading, selectError } from "@/store/slices/documentSlice";
+import { sectionsToBlocks } from "@/utils/sectionTransform";
+import PanelWrapper from "@/components/PanelWrapper";
 
 export function EditPanel() {
   // Redux selectors
@@ -105,7 +106,7 @@ export function EditPanel() {
   };
 
   return (
-    <>
+    <PanelWrapper>
       {!loading && !error && blocks.length === 0 && (
         <Callout.Root style={{ marginBottom: "16px" }}>
           <Callout.Text>No sections loaded. Click "Add New Block" to start.</Callout.Text>
@@ -139,6 +140,6 @@ export function EditPanel() {
           + Add New Block
         </Button>
       )}
-    </>
+    </PanelWrapper>
   );
 }

@@ -2,8 +2,8 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { IconButton, Tooltip } from "@radix-ui/themes";
 import { SunIcon, MoonIcon, Pencil1Icon, EyeOpenIcon } from "@radix-ui/react-icons";
-import { toggleTheme, selectTheme, toggleEditing, togglePreviewing, selectIsEditing, selectIsPreviewing } from "../store/slices/globalSlice";
-import { colors, spacing, zIndices } from "../styles/tokens";
+import { toggleTheme, selectTheme, toggleEditing, togglePreviewing, selectIsEditing, selectIsPreviewing } from "@/store/slices/globalSlice";
+import { colors, spacing, zIndices } from "@styles/tokens";
 
 const StyledToolbar = styled.div`
   position: fixed;

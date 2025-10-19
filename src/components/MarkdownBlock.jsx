@@ -6,9 +6,9 @@ import { PlayIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@radi
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import { keymap } from "@codemirror/view";
-import { getSectionTypeColor, formatSectionType } from "../utils/sectionTransform";
-import { selectTheme } from "../store/slices/globalSlice";
-import { colors, spacing, radii } from "../styles/tokens";
+import { getSectionTypeColor, formatSectionType } from "@/utils/sectionTransform";
+import { selectTheme } from "@/store/slices/globalSlice";
+import { colors, spacing, radii } from "@styles/tokens";
 
 const BlockContainer = styled.div`
   width: 100%;
