@@ -25,16 +25,13 @@ const EditorWrapper = styled.div`
   display: flex;
   flex-direction: column;
   min-height: ${props => `${props.$minLines * 1.5}em`};
-  max-height: ${props => `${props.$maxLines * 1.5}em`};
-  height: ${props => `${props.$clampedLines * 1.5}em`};
-  overflow: auto;
 
   .cm-editor {
-    height: 100%;
+    height: auto;
   }
 
   .cm-scroller {
-    overflow: auto;
+    overflow: visible;
   }
 `;
 
@@ -59,7 +56,6 @@ export function MarkdownBlock({
   sectionType,
   sectionId,
   minLines = 2,
-  maxLines = 10,
   shouldFocus = false,
   focusCursorPosition = null
 }) {
@@ -92,12 +88,6 @@ export function MarkdownBlock({
       return () => clearTimeout(timeoutId);
     }
   }, [shouldFocus, focusCursorPosition, id]);
-
-  // Calculate dynamic height based on actual content lines
-  const clampedLines = useMemo(() => {
-    const lineCount = content.split("\n").length;
-    return Math.max(minLines, Math.min(maxLines, lineCount));
-  }, [content, minLines, maxLines]);
 
   // Helper to reset key counters
   const resetKeyCounters = () => {
@@ -222,12 +212,10 @@ export function MarkdownBlock({
       <EditorWrapper
         ref={editorWrapperRef}
         $minLines={minLines}
-        $maxLines={maxLines}
-        $clampedLines={clampedLines}
       >
         <CodeMirror
           value={content}
-          height="100%"
+          height="auto"
           theme={theme}
           extensions={extensions}
           onChange={(value) => onContentChange(id, value)}
