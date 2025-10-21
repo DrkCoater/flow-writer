@@ -1,5 +1,18 @@
+import { forwardRef } from "react";
 import "@styles/PanelWrapper.scss";
 
-export default function PanelWrapper({ children }) {
-  return <div className="panel-wrapper">{children}</div>;
-}
+const PanelWrapper = forwardRef(({ children, onScroll }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className="panel-wrapper"
+      onScroll={onScroll}
+    >
+      {children}
+    </div>
+  );
+});
+
+PanelWrapper.displayName = 'PanelWrapper';
+
+export default PanelWrapper;

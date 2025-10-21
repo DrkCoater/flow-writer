@@ -4,6 +4,7 @@ const initialState = {
   theme: 'dark',
   isEditing: true,
   isPreviewing: false,
+  isSyncScrollEnabled: false,
 };
 
 const globalSlice = createSlice({
@@ -22,13 +23,17 @@ const globalSlice = createSlice({
     togglePreviewing: (state) => {
       state.isPreviewing = !state.isPreviewing;
     },
+    toggleSyncScroll: (state) => {
+      state.isSyncScrollEnabled = !state.isSyncScrollEnabled;
+    },
   },
 });
 
-export const { toggleTheme, setTheme, toggleEditing, togglePreviewing } = globalSlice.actions;
+export const { toggleTheme, setTheme, toggleEditing, togglePreviewing, toggleSyncScroll } = globalSlice.actions;
 
 export const selectTheme = (state) => state.global.theme;
 export const selectIsEditing = (state) => state.global.isEditing;
 export const selectIsPreviewing = (state) => state.global.isPreviewing;
+export const selectIsSyncScrollEnabled = (state) => state.global.isSyncScrollEnabled;
 
 export default globalSlice.reducer;

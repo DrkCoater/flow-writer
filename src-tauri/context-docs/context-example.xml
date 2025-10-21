@@ -27,6 +27,8 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 - Consolidate context engineering practices into one workspace.
 - Enable per-block AI actions (revise, tone, grammar, query).
 
+---
+
 # Out of Scope (v1)
 - Multi-user real-time collaboration
 - TypeScript types (JavaScript-only project)
@@ -43,7 +45,7 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
    - CodeMirror (Markdown), per-block controls (Radix Popover/Dropdown)
 3. **Define XML schema and validation**
 
-<!-- BLOCK_SEPARATOR -->
+---
 
 # Process - Implementation Phase
 

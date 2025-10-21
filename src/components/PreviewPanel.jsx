@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import ReactMarkdown from "react-markdown";
@@ -21,7 +22,7 @@ const EmptyStateSubtext = styled.p`
   margin-top: 8px;
 `;
 
-export function PreviewPanel() {
+export const PreviewPanel = forwardRef(({ onScroll }, ref) => {
   const blocks = useSelector(selectBlocks);
 
   // Group blocks by section and combine into a single markdown document
@@ -57,7 +58,7 @@ export function PreviewPanel() {
 
   if (blocks.length === 0) {
     return (
-      <PanelWrapper>
+      <PanelWrapper ref={ref} onScroll={onScroll}>
         <EmptyState>
           <p>No content to preview</p>
           <EmptyStateSubtext>Load a document to see the preview</EmptyStateSubtext>
@@ -67,8 +68,10 @@ export function PreviewPanel() {
   }
 
   return (
-    <PanelWrapper>
+    <PanelWrapper ref={ref} onScroll={onScroll}>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{combinedContent}</ReactMarkdown>
     </PanelWrapper>
   );
-}
+});
+
+PreviewPanel.displayName = 'PreviewPanel';

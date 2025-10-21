@@ -4,12 +4,13 @@
 
 /**
  * Block separator used in section content to split into multiple blocks
+ * Uses markdown horizontal rule syntax
  */
-const BLOCK_SEPARATOR = '<!-- BLOCK_SEPARATOR -->';
+const BLOCK_SEPARATOR = /\n---\n/;
 
 /**
  * Convert sections array to blocks array
- * Supports splitting sections into multiple blocks using BLOCK_SEPARATOR
+ * Supports splitting sections into multiple blocks using '---' separator
  * @param {Section[]} sections - Array of flat sections from backend
  * @returns {Block[]} Array of blocks for frontend rendering
  */
@@ -25,7 +26,7 @@ export function sectionsToBlocks(sections) {
     const content = section.content || '';
     const sectionType = section.section_type || section.type || 'unknown';
 
-    // Split content on separator
+    // Split content on '---' separator (on its own line)
     const contentParts = content.split(BLOCK_SEPARATOR).map(part => part.trim());
 
     // Create a block for each content part

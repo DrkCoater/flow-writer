@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Button, Callout } from "@radix-ui/themes";
 import { MarkdownBlock } from "@/components/MarkdownBlock";
@@ -20,7 +21,7 @@ import {
 } from "@/store/slices/documentSlice";
 import PanelWrapper from "@/components/PanelWrapper";
 
-export function EditPanel() {
+export const EditPanel = forwardRef(({ onScroll }, ref) => {
   const dispatch = useDispatch();
 
   // Redux selectors
@@ -72,7 +73,7 @@ export function EditPanel() {
   };
 
   return (
-    <PanelWrapper>
+    <PanelWrapper ref={ref} onScroll={onScroll}>
       {!loading && !error && blocks.length === 0 && (
         <Callout.Root style={{ marginBottom: "16px" }}>
           <Callout.Text>No sections loaded. Click "Add New Block" to start.</Callout.Text>
@@ -121,4 +122,6 @@ export function EditPanel() {
       )}
     </PanelWrapper>
   );
-}
+});
+
+EditPanel.displayName = 'EditPanel';

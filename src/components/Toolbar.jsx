@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { IconButton, Tooltip } from "@radix-ui/themes";
-import { SunIcon, MoonIcon, Pencil1Icon, EyeOpenIcon } from "@radix-ui/react-icons";
-import { toggleTheme, selectTheme, toggleEditing, togglePreviewing, selectIsEditing, selectIsPreviewing } from "@/store/slices/globalSlice";
+import { SunIcon, MoonIcon, Pencil1Icon, EyeOpenIcon, Link2Icon } from "@radix-ui/react-icons";
+import { toggleTheme, selectTheme, toggleEditing, togglePreviewing, toggleSyncScroll, selectIsEditing, selectIsPreviewing, selectIsSyncScrollEnabled } from "@/store/slices/globalSlice";
 import { colors, spacing, zIndices } from "@styles/tokens";
 
 const StyledToolbar = styled.div`
@@ -46,6 +46,9 @@ export function Toolbar() {
   const theme = useSelector(selectTheme);
   const isEditing = useSelector(selectIsEditing);
   const isPreviewing = useSelector(selectIsPreviewing);
+  const isSyncScrollEnabled = useSelector(selectIsSyncScrollEnabled);
+
+  const bothPanelsActive = isEditing && isPreviewing;
 
   return (
     <StyledToolbar>
@@ -68,6 +71,17 @@ export function Toolbar() {
             <EyeOpenIcon />
           </IconButton>
         </Tooltip>
+        {bothPanelsActive && (
+          <Tooltip content="Sync Scrolling">
+            <IconButton
+              size={1}
+              variant={isSyncScrollEnabled ? "solid" : "soft"}
+              onClick={() => dispatch(toggleSyncScroll())}
+            >
+              <Link2Icon />
+            </IconButton>
+          </Tooltip>
+        )}
       </ToolbarSection>
       <ToolbarSection $isCenter data-tauri-drag-region />
       <ToolbarSection $isRight>

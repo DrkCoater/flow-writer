@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import styled from "@emotion/styled";
 import { Theme, Spinner, Callout } from "@radix-ui/themes";
@@ -7,7 +7,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Toolbar } from "@/components/Toolbar";
 import { EditPanel } from "@/components/EditPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
-import { selectTheme, selectIsEditing, selectIsPreviewing } from "@/store/slices/globalSlice";
+import { selectTheme, selectIsEditing, selectIsPreviewing, selectIsSyncScrollEnabled } from "@/store/slices/globalSlice";
 import { loadDocument, selectLoading, selectError } from "@/store/slices/documentSlice";
 import "@styles/app.scss";
 
@@ -24,10 +24,70 @@ function App() {
   const error = useSelector(selectError);
   const isEditing = useSelector(selectIsEditing);
   const isPreviewing = useSelector(selectIsPreviewing);
+  const isSyncScrollEnabled = useSelector(selectIsSyncScrollEnabled);
+
+  const editPanelRef = useRef(null);
+  const previewPanelRef = useRef(null);
+  const isSyncingRef = useRef(false);
 
   useEffect(() => {
     dispatch(loadDocument());
   }, [dispatch]);
+
+  // Synchronized scrolling handler
+  const handleEditorScroll = () => {
+    if (!isSyncScrollEnabled || isSyncingRef.current) return;
+
+    const editPanel = editPanelRef.current;
+    const previewPanel = previewPanelRef.current;
+
+    if (editPanel && previewPanel) {
+      isSyncingRef.current = true;
+
+      requestAnimationFrame(() => {
+        const { scrollTop, scrollHeight, clientHeight } = editPanel;
+        const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
+
+        const targetScrollHeight = previewPanel.scrollHeight;
+        const targetClientHeight = previewPanel.clientHeight;
+        const targetScrollTop = scrollPercentage * (targetScrollHeight - targetClientHeight);
+
+        previewPanel.scrollTop = targetScrollTop;
+
+        // Reset flag after a short delay
+        setTimeout(() => {
+          isSyncingRef.current = false;
+        }, 50);
+      });
+    }
+  };
+
+  const handlePreviewScroll = () => {
+    if (!isSyncScrollEnabled || isSyncingRef.current) return;
+
+    const editPanel = editPanelRef.current;
+    const previewPanel = previewPanelRef.current;
+
+    if (editPanel && previewPanel) {
+      isSyncingRef.current = true;
+
+      requestAnimationFrame(() => {
+        const { scrollTop, scrollHeight, clientHeight } = previewPanel;
+        const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
+
+        const targetScrollHeight = editPanel.scrollHeight;
+        const targetClientHeight = editPanel.clientHeight;
+        const targetScrollTop = scrollPercentage * (targetScrollHeight - targetClientHeight);
+
+        editPanel.scrollTop = targetScrollTop;
+
+        // Reset flag after a short delay
+        setTimeout(() => {
+          isSyncingRef.current = false;
+        }, 50);
+      });
+    }
+  };
 
   const bothActive = isEditing && isPreviewing;
   const neitherActive = !isEditing && !isPreviewing;
@@ -63,11 +123,11 @@ function App() {
             {bothActive ? (
               <PanelGroup direction="horizontal">
                 <Panel defaultSize={50} minSize={20}>
-                  <EditPanel />
+                  <EditPanel ref={editPanelRef} onScroll={handleEditorScroll} />
                 </Panel>
                 <PanelResizeHandle className="resize-handle" />
                 <Panel defaultSize={50} minSize={20}>
-                  <PreviewPanel />
+                  <PreviewPanel ref={previewPanelRef} onScroll={handlePreviewScroll} />
                 </Panel>
               </PanelGroup>
             ) : (
