@@ -23,12 +23,13 @@ const BASE_FONT_SIZE = 16;
 // Styled Components
 const BlockContainer = styled.div`
   width: 100%;
-  border: 1px solid ${colors.border.default};
-  border-radius: ${radii.lg};
+  border: ${props => props.$isFocused ? `1px solid var(--accent-9)` : `1px solid ${colors.border.default}`};
+  border-radius: ${radii.md};
   overflow: hidden;
   margin: ${spacing.xxl} 0 ${spacing.lg} 0;
   background-color: ${colors.background.elevated};
   flex-shrink: 0;
+  transition: border 0.15s ease-in-out;
 `;
 
 const EditorWrapper = styled.div`
@@ -155,11 +156,9 @@ export function MarkdownBlock({
   const [blockHeight, setBlockHeight] = useState('auto');
   const [isResizing, setIsResizing] = useState(false);
   const [isWordWrapEnabled, setIsWordWrapEnabled] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const codeMirrorViewRef = useRef(null);
   const editorWrapperRef = useRef(null);
-  const arrowUpCountRef = useRef(0);
-  const arrowDownCountRef = useRef(0);
-  const keyResetTimerRef = useRef(null);
 
   // Effects
   // Set cursor position and focus after navigation
@@ -180,27 +179,6 @@ export function MarkdownBlock({
       return () => clearTimeout(timeoutId);
     }
   }, [shouldFocus, focusCursorPosition, id]);
-
-  // Helper Functions
-  // Reset arrow key press counters
-  const resetKeyCounters = () => {
-    arrowUpCountRef.current = 0;
-    arrowDownCountRef.current = 0;
-    if (keyResetTimerRef.current) {
-      clearTimeout(keyResetTimerRef.current);
-      keyResetTimerRef.current = null;
-    }
-  };
-
-  // Helper to schedule counter reset
-  const scheduleCounterReset = () => {
-    if (keyResetTimerRef.current) {
-      clearTimeout(keyResetTimerRef.current);
-    }
-    keyResetTimerRef.current = setTimeout(() => {
-      resetKeyCounters();
-    }, 500);
-  };
 
   // Event Handlers
   // Handle resize drag interaction
@@ -247,50 +225,69 @@ export function MarkdownBlock({
   };
 
   // CodeMirror Extensions
-  // Custom keymap for block navigation
+  // Custom keymap for seamless block navigation
   const customKeymap = useMemo(() => {
     return keymap.of([
       {
         key: "ArrowUp",
         run: (view) => {
           const { from } = view.state.selection.main;
+          const currentLine = view.state.doc.lineAt(from);
 
-          if (from === 0 && !isFirst && onNavigateToPrevious) {
-            arrowUpCountRef.current += 1;
-            scheduleCounterReset();
-
-            if (arrowUpCountRef.current >= 2) {
-              resetKeyCounters();
-              onNavigateToPrevious(id);
-              return true;
-            }
-            return true; // Prevent default navigation but don't move yet
-          } else {
-            arrowUpCountRef.current = 0;
+          // Navigate to previous block if cursor is on first line
+          if (currentLine.number === 1 && !isFirst && onNavigateToPrevious) {
+            onNavigateToPrevious(id);
+            return true; // Consume the event
           }
-          return false;
+
+          return false; // Allow default behavior
         }
       },
       {
         key: "ArrowDown",
         run: (view) => {
           const { from } = view.state.selection.main;
-          const lastLine = view.state.doc.line(view.state.doc.lines);
+          const currentLine = view.state.doc.lineAt(from);
+          const lastLineNumber = view.state.doc.lines;
 
-          if (from >= lastLine.from && from <= lastLine.to && !isLast && onNavigateToNext) {
-            arrowDownCountRef.current += 1;
-            scheduleCounterReset();
-
-            if (arrowDownCountRef.current >= 2) {
-              resetKeyCounters();
-              onNavigateToNext(id);
-              return true;
-            }
-            return true; // Prevent default navigation but don't move yet
-          } else {
-            arrowDownCountRef.current = 0;
+          // Navigate to next block if cursor is on last line
+          if (currentLine.number === lastLineNumber && !isLast && onNavigateToNext) {
+            onNavigateToNext(id);
+            return true; // Consume the event
           }
-          return false;
+
+          return false; // Allow default behavior
+        }
+      },
+      {
+        key: "ArrowLeft",
+        run: (view) => {
+          const { from } = view.state.selection.main;
+
+          // Navigate to previous block if cursor is at the very beginning
+          if (from === 0 && !isFirst && onNavigateToPrevious) {
+            onNavigateToPrevious(id);
+            return true; // Consume the event
+          }
+
+          return false; // Allow default behavior
+        }
+      },
+      {
+        key: "ArrowRight",
+        run: (view) => {
+          const { from } = view.state.selection.main;
+          const docLength = view.state.doc.length;
+          const currentLine = view.state.doc.lineAt(from);
+          const lastLineNumber = view.state.doc.lines;
+
+          // Navigate to next block if cursor is at the end of the last line
+          if (from === docLength && currentLine.number === lastLineNumber && !isLast && onNavigateToNext) {
+            onNavigateToNext(id);
+            return true; // Consume the event
+          }
+
+          return false; // Allow default behavior
         }
       }
     ]);
@@ -309,18 +306,28 @@ export function MarkdownBlock({
     return [];
   }, [theme]);
 
+  // Focus detection extension
+  const focusExtension = useMemo(() => {
+    return EditorView.updateListener.of((update) => {
+      if (update.focusChanged) {
+        setIsFocused(update.view.hasFocus);
+      }
+    });
+  }, []);
+
   const extensions = useMemo(() => {
     return [
       markdown(),
       customKeymap,
+      focusExtension,
       ...(isWordWrapEnabled ? [EditorView.lineWrapping] : []),
       ...(Array.isArray(customTheme) ? customTheme : [customTheme])
     ];
-  }, [customKeymap, isWordWrapEnabled, customTheme]);
+  }, [customKeymap, focusExtension, isWordWrapEnabled, customTheme]);
 
   // Render
   return (
-    <BlockContainer>
+    <BlockContainer $isFocused={isFocused}>
       <BlockHeader justify="between" align="center">
         <Flex gap="2" align="center">
           {sectionType && isFirstInSection && (
