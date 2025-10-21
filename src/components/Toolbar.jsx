@@ -1,8 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { IconButton, Tooltip } from "@radix-ui/themes";
-import { SunIcon, MoonIcon, Pencil1Icon, EyeOpenIcon, Link2Icon } from "@radix-ui/react-icons";
+import { SunIcon, MoonIcon, Pencil1Icon, EyeOpenIcon, Link2Icon, DownloadIcon } from "@radix-ui/react-icons";
 import { toggleTheme, selectTheme, toggleEditing, togglePreviewing, toggleSyncScroll, selectIsEditing, selectIsPreviewing, selectIsSyncScrollEnabled } from "@/store/slices/globalSlice";
+import { saveDocument, selectLoading } from "@/store/slices/documentSlice";
 import { colors, spacing, zIndices } from "@styles/tokens";
 
 const StyledToolbar = styled.div`
@@ -47,8 +48,13 @@ export function Toolbar() {
   const isEditing = useSelector(selectIsEditing);
   const isPreviewing = useSelector(selectIsPreviewing);
   const isSyncScrollEnabled = useSelector(selectIsSyncScrollEnabled);
+  const loading = useSelector(selectLoading);
 
   const bothPanelsActive = isEditing && isPreviewing;
+
+  const handleSave = () => {
+    dispatch(saveDocument());
+  };
 
   return (
     <StyledToolbar>
@@ -82,6 +88,16 @@ export function Toolbar() {
             </IconButton>
           </Tooltip>
         )}
+        <Tooltip content="Save Document">
+          <IconButton
+            size={1}
+            variant="soft"
+            onClick={handleSave}
+            disabled={loading}
+          >
+            <DownloadIcon />
+          </IconButton>
+        </Tooltip>
       </ToolbarSection>
       <ToolbarSection $isCenter data-tauri-drag-region />
       <ToolbarSection $isRight>

@@ -1,7 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { invoke } from '@tauri-apps/api/core';
-import { resolveResource } from '@tauri-apps/api/path';
-import { sectionsToBlocks } from '@/utils/sectionTransform';
+import { sectionsToBlocks, blocksToSections } from '@/utils/sectionTransform';
+
+// Use hardcoded path to source file for development
+// This ensures saves write to the actual source file, not the bundled resources
+// Note: context-docs is at project root, outside src-tauri/ to prevent hot reload on save
+const DEV_FILE_PATH = '/Users/jeremylu/Workspace/AiStuff/katari/flow-writer/context-docs/context-example.xml';
 
 /**
  * Async thunk to load document sections from backend
@@ -10,13 +14,39 @@ export const loadDocument = createAsyncThunk(
   'document/loadDocument',
   async (_, { rejectWithValue }) => {
     try {
-      // Resolve the resource path to absolute path
-      const filePath = await resolveResource('context-docs/context-example.xml');
+      // Use hardcoded path for development
+      const filePath = DEV_FILE_PATH;
       // Invoke Tauri backend command to load sections
       const sections = await invoke('load_sections', { filePath });
       // Transform sections to blocks
       const blocks = sectionsToBlocks(sections);
       return { sections, blocks };
+    } catch (error) {
+      return rejectWithValue(error.message || String(error));
+    }
+  }
+);
+
+/**
+ * Async thunk to save document sections to backend
+ */
+export const saveDocument = createAsyncThunk(
+  'document/saveDocument',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const blocks = state.document.blocks;
+
+      // Convert blocks back to sections
+      const sections = blocksToSections(blocks);
+
+      // Use hardcoded path for development
+      const filePath = DEV_FILE_PATH;
+
+      // Invoke Tauri backend command to save sections
+      await invoke('save_document', { filePath, sections });
+
+      return { sections };
     } catch (error) {
       return rejectWithValue(error.message || String(error));
     }
@@ -266,6 +296,19 @@ const documentSlice = createSlice({
         state.error = null;
       })
       .addCase(loadDocument.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(saveDocument.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(saveDocument.fulfilled, (state, action) => {
+        state.loading = false;
+        state.sections = action.payload.sections;
+        state.error = null;
+      })
+      .addCase(saveDocument.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

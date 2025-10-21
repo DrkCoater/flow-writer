@@ -95,6 +95,56 @@ export function formatSectionType(sectionType) {
  */
 
 /**
+ * Convert blocks array back to sections array for saving
+ * Merges sub-blocks within the same section using '---' separator
+ * @param {Block[]} blocks - Array of blocks from frontend
+ * @returns {Section[]} Array of sections for backend
+ */
+export function blocksToSections(blocks) {
+  if (!Array.isArray(blocks)) {
+    console.warn('blocksToSections: expected array, got:', typeof blocks);
+    return [];
+  }
+
+  // Group blocks by parentSectionId
+  const sectionMap = new Map();
+
+  blocks.forEach(block => {
+    const sectionId = block.parentSectionId;
+
+    if (!sectionMap.has(sectionId)) {
+      sectionMap.set(sectionId, {
+        id: sectionId,
+        section_type: block.sectionType,
+        contents: [],
+        ref_target: null,
+        children: []
+      });
+    }
+
+    sectionMap.get(sectionId).contents.push(block.content);
+  });
+
+  // Convert map to sections array
+  const sections = Array.from(sectionMap.values()).map(sectionData => {
+    // Join contents with separator if multiple blocks
+    const content = sectionData.contents.length > 1
+      ? sectionData.contents.join('\n---\n')
+      : sectionData.contents[0];
+
+    return {
+      id: sectionData.id,
+      type: sectionData.section_type,  // Use "type" not "section_type" for Rust deserializer
+      content,
+      ref_target: sectionData.ref_target,
+      children: sectionData.children
+    };
+  });
+
+  return sections;
+}
+
+/**
  * @typedef {Object} Block
  * @property {string} id - Unique block ID (section.id or section.id.N for sub-blocks)
  * @property {string} content - Markdown content

@@ -2,6 +2,7 @@ use crate::error::Result;
 use crate::models::*;
 use crate::parsers::{xml_parser, mermaid_parser};
 use crate::processors::variable_resolver;
+use crate::serializers::xml_serializer;
 use crate::validators::schema_validator;
 use tokio::fs;
 
@@ -51,6 +52,23 @@ pub async fn load_flow_graph(file_path: &str) -> Result<Option<FlowGraph>> {
 pub async fn load_metadata(file_path: &str) -> Result<MetaData> {
     let doc = load_context_document(file_path).await?;
     Ok(doc.meta)
+}
+
+/// Save updated sections to the context document
+pub async fn save_document(file_path: &str, updated_sections: Vec<Section>) -> Result<()> {
+    // Load the existing document to preserve metadata, variables, and flow graph
+    let mut doc = load_context_document(file_path).await?;
+
+    // Replace sections with updated ones
+    doc.sections = updated_sections;
+
+    // Serialize to XML
+    let xml_content = xml_serializer::serialize_to_xml(&doc)?;
+
+    // Write to file
+    fs::write(file_path, xml_content).await?;
+
+    Ok(())
 }
 
 #[cfg(test)]

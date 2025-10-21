@@ -33,7 +33,7 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "context-docs/*"
+      "../context-docs/*"
     ]
   }
 }

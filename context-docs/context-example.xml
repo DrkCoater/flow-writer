@@ -8,35 +8,28 @@
     <tags>context, engineering, markdown, xml, mermaid</tags>
     <description>Minimal XML wrapper with Markdown content and Mermaid flow, designed for a JS/React editor.</description>
   </meta>
-
   <variables>
     <var name="userName">Jeremy</var>
     <var name="goal">Ship the v1 Context Editor</var>
     <var name="deadline">2025-11-01</var>
     <var name="qualityThreshold">85%</var>
   </variables>
-
   <sections>
-    <!-- 1. Intent Section (FIRST) - Split into multiple blocks -->
     <section id="intent-1" type="intent">
       <content><![CDATA[
 # Intent
-We aim to **${goal}** by **${deadline}** for **${userName}**.
+We aim to **Ship the v1 Context Editor** by **2025-11-01** for **Jeremy**.
 
 **Why now?**
 - Consolidate context engineering practices into one workspace.
 - Enable per-block AI actions (revise, tone, grammar, query).
-
 ---
-
 # Out of Scope (v1)
 - Multi-user real-time collaboration
 - TypeScript types (JavaScript-only project)
 ]]></content>
     </section>
-
-    <!-- 2. Main Process Section - Split into Planning and Implementation -->
-    <section id="proc-1" type="process" refTarget="intent-1 eval-1">
+    <section id="proc-1" type="process">
       <content><![CDATA[
 # Process - Planning Phase
 
@@ -44,9 +37,7 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 2. **Design editor block architecture**
    - CodeMirror (Markdown), per-block controls (Radix Popover/Dropdown)
 3. **Define XML schema and validation**
-
 ---
-
 # Process - Implementation Phase
 
 1. **Wire XML↔MD loader/saver**
@@ -55,9 +46,7 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 4. **Render flow diagram**
 ]]></content>
     </section>
-
-    <!-- 3. Alternative Process A: Zustand -->
-    <section id="proc-alt-zustand" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="1">
+    <section id="proc-alt-zustand" type="process">
       <content><![CDATA[
 # Process - Alternative A (Zustand)
 
@@ -74,9 +63,7 @@ Use Zustand store for state management.
 3. Use selectors for optimized re-renders
 ]]></content>
     </section>
-
-    <!-- 4. Alternative Process B: Jotai -->
-    <section id="proc-alt-jotai" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="2">
+    <section id="proc-alt-jotai" type="process">
       <content><![CDATA[
 # Process - Alternative B (Jotai)
 
@@ -93,9 +80,7 @@ Use Jotai atoms for state management.
 3. Leverage atom families for dynamic sections
 ]]></content>
     </section>
-
-    <!-- 5. Alternative Process C: Redux Toolkit -->
-    <section id="proc-alt-redux" type="process" parentId="proc-1" isAlternative="true" alternativeKey="state-management" alternativePriority="3">
+    <section id="proc-alt-redux" type="process">
       <content><![CDATA[
 # Process - Alternative C (Redux Toolkit)
 
@@ -112,15 +97,13 @@ Use Redux Toolkit for state management.
 3. Use RTK Query for async operations
 ]]></content>
     </section>
-
-    <!-- 6. Evaluation Section (LAST) -->
     <section id="eval-1" type="evaluation">
       <content><![CDATA[
 # Evaluation
 
 ## Success Criteria
 - End-to-end flow from **Intent → Process → Alternatives → Evaluation** is captured.
-- Measurable outcome: Onboarding completion **≥ ${qualityThreshold}** within 30 days of v1 launch.
+- Measurable outcome: Onboarding completion **≥ 85%** within 30 days of v1 launch.
 - Review checklist complete (Intent clarity, Process coverage, Alternatives explored, Criteria testability).
 
 ### Acceptance Checks
@@ -131,8 +114,6 @@ Use Redux Toolkit for state management.
 ]]></content>
     </section>
   </sections>
-
-  <!-- Flow Graph - Separate top-level element -->
   <flow id="flow-1" version="1.0">
     <title>Document Flow</title>
     <diagram><![CDATA[

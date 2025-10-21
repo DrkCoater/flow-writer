@@ -2,6 +2,7 @@ pub mod error;
 pub mod models;
 pub mod parsers;
 pub mod processors;
+pub mod serializers;
 pub mod services;
 pub mod validators;
 
@@ -32,6 +33,14 @@ async fn load_metadata(file_path: String) -> Result<MetaData, String> {
         .map_err(|e| e.to_string())
 }
 
+/// Save updated sections to the context document
+#[tauri::command]
+async fn save_document(file_path: String, sections: Vec<Section>) -> Result<(), String> {
+    flow_service::save_document(&file_path, sections)
+        .await
+        .map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -39,7 +48,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             load_sections,
             load_flow_graph,
-            load_metadata
+            load_metadata,
+            save_document
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
