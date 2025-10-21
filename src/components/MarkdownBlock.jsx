@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { Button, Flex, Tooltip, IconButton, DropdownMenu, TextField, Badge } from "@radix-ui/themes";
-import { PlayIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon, TextAlignLeftIcon } from "@radix-ui/react-icons";
+import { PlayIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, TrashIcon, TextAlignLeftIcon, DoubleArrowUpIcon, DoubleArrowDownIcon } from "@radix-ui/react-icons";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import { keymap, EditorView } from "@codemirror/view";
@@ -113,6 +113,15 @@ const SectionIdText = styled.span`
   font-family: monospace;
 `;
 
+const SubBlockIndicator = styled.span`
+  font-size: 11px;
+  color: var(--gray-11);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
 // Component
 export function MarkdownBlock({
   id,
@@ -121,16 +130,24 @@ export function MarkdownBlock({
   onDelete,
   onMoveUp,
   onMoveDown,
+  onMergeUp,
+  onMergeDown,
   onAddBelow,
   onNavigateToPrevious,
   onNavigateToNext,
   isFirst,
   isLast,
+  canMergeUp = false,
+  canMergeDown = false,
   sectionType,
   sectionId,
   minLines = 2,
   shouldFocus = false,
-  focusCursorPosition = null
+  focusCursorPosition = null,
+  // New props for sub-blocks
+  isFirstInSection = true,
+  blockIndex = 0,
+  totalBlocks = 1
 }) {
   const theme = useSelector(selectTheme);
   const [showCustomAsk, setShowCustomAsk] = useState(false);
@@ -306,13 +323,20 @@ export function MarkdownBlock({
     <BlockContainer>
       <BlockHeader justify="between" align="center">
         <Flex gap="2" align="center">
-          {sectionType && (
-            <Badge color={getSectionTypeColor(sectionType)} size="1">
-              {formatSectionType(sectionType)}
-            </Badge>
+          {sectionType && isFirstInSection && (
+            <>
+              <Badge color={getSectionTypeColor(sectionType)} size="1">
+                {formatSectionType(sectionType)}
+              </Badge>
+              {sectionId && (
+                <SectionIdText>{sectionId}</SectionIdText>
+              )}
+            </>
           )}
-          {sectionId && (
-            <SectionIdText>{sectionId}</SectionIdText>
+          {sectionType && !isFirstInSection && (
+            <SubBlockIndicator>
+              ↳ {formatSectionType(sectionType)} {id}
+            </SubBlockIndicator>
           )}
         </Flex>
 
@@ -339,6 +363,16 @@ export function MarkdownBlock({
           <Tooltip content="Move Down">
             <IconButton size="1" variant="soft" onClick={() => onMoveDown(id)} disabled={isLast}>
               <ArrowDownIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip content="Merge with block above">
+            <IconButton size="1" variant="soft" color="blue" onClick={() => onMergeUp(id)} disabled={!canMergeUp}>
+              <DoubleArrowUpIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip content="Merge with block below">
+            <IconButton size="1" variant="soft" color="blue" onClick={() => onMergeDown(id)} disabled={!canMergeDown}>
+              <DoubleArrowDownIcon />
             </IconButton>
           </Tooltip>
           <Tooltip content="Delete">

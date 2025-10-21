@@ -17,7 +17,7 @@
   </variables>
 
   <sections>
-    <!-- 1. Intent Section (FIRST) -->
+    <!-- 1. Intent Section (FIRST) - Split into multiple blocks -->
     <section id="intent-1" type="intent">
       <content><![CDATA[
 # Intent
@@ -27,24 +27,32 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 - Consolidate context engineering practices into one workspace.
 - Enable per-block AI actions (revise, tone, grammar, query).
 
-**Out of scope (v1):**
+<!-- BLOCK_SEPARATOR -->
+
+# Out of Scope (v1)
 - Multi-user real-time collaboration
 - TypeScript types (JavaScript-only project)
 ]]></content>
     </section>
 
-    <!-- 2. Main Process Section -->
+    <!-- 2. Main Process Section - Split into Planning and Implementation -->
     <section id="proc-1" type="process" refTarget="intent-1 eval-1">
       <content><![CDATA[
-# Process
+# Process - Planning Phase
 
 1. **Audit current authoring UX**
-2. **Implement editor blocks**
+2. **Design editor block architecture**
    - CodeMirror (Markdown), per-block controls (Radix Popover/Dropdown)
-3. **Wire XML↔MD loader/saver**
-4. **Add AI actions per block** (revise, tone, grammar, query)
-5. **Add progress tracking stepper**
-6. **Render flow diagram**
+3. **Define XML schema and validation**
+
+<!-- BLOCK_SEPARATOR -->
+
+# Process - Implementation Phase
+
+1. **Wire XML↔MD loader/saver**
+2. **Add AI actions per block** (revise, tone, grammar, query)
+3. **Add progress tracking stepper**
+4. **Render flow diagram**
 ]]></content>
     </section>
 

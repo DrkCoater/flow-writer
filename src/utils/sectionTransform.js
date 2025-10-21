@@ -3,7 +3,13 @@
  */
 
 /**
+ * Block separator used in section content to split into multiple blocks
+ */
+const BLOCK_SEPARATOR = '<!-- BLOCK_SEPARATOR -->';
+
+/**
  * Convert sections array to blocks array
+ * Supports splitting sections into multiple blocks using BLOCK_SEPARATOR
  * @param {Section[]} sections - Array of flat sections from backend
  * @returns {Block[]} Array of blocks for frontend rendering
  */
@@ -13,13 +19,41 @@ export function sectionsToBlocks(sections) {
     return [];
   }
 
-  return sections.map(section => ({
-    id: section.id,
-    content: section.content || '',
-    isRendered: false, // Default to edit mode
-    sectionId: section.id,
-    sectionType: section.section_type || section.type || 'unknown'
-  }));
+  const blocks = [];
+
+  sections.forEach(section => {
+    const content = section.content || '';
+    const sectionType = section.section_type || section.type || 'unknown';
+
+    // Split content on separator
+    const contentParts = content.split(BLOCK_SEPARATOR).map(part => part.trim());
+
+    // Create a block for each content part
+    contentParts.forEach((contentPart, index) => {
+      const isFirstInSection = index === 0;
+      const totalBlocks = contentParts.length;
+
+      // Generate block ID: use base section ID for single blocks, add suffix for multiple
+      const blockId = totalBlocks > 1
+        ? `${section.id}.${index + 1}`
+        : section.id;
+
+      blocks.push({
+        id: blockId,
+        content: contentPart,
+        isRendered: false, // Default to edit mode
+        sectionId: section.id,
+        sectionType,
+        // Metadata for sub-blocks
+        parentSectionId: section.id,
+        blockIndex: index,
+        totalBlocks,
+        isFirstInSection
+      });
+    });
+  });
+
+  return blocks;
 }
 
 /**
@@ -61,9 +95,13 @@ export function formatSectionType(sectionType) {
 
 /**
  * @typedef {Object} Block
- * @property {string} id - Unique block ID (use section.id)
+ * @property {string} id - Unique block ID (section.id or section.id.N for sub-blocks)
  * @property {string} content - Markdown content
  * @property {boolean} isRendered - Edit (false) or Preview (true) mode
  * @property {string} sectionId - Original section ID
  * @property {string} sectionType - Section type (intent, evaluation, etc.)
+ * @property {string} parentSectionId - Parent section ID (same as sectionId)
+ * @property {number} blockIndex - Index within section (0-based)
+ * @property {number} totalBlocks - Total number of blocks in this section
+ * @property {boolean} isFirstInSection - True if this is the first block in the section
  */
