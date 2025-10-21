@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { selectSections } from "@/store/slices/documentSlice";
+import { selectBlocks } from "@/store/slices/documentSlice";
 import { formatSectionType } from "@/utils/sectionTransform";
 import PanelWrapper from "@/components/PanelWrapper";
 
@@ -22,22 +22,40 @@ const EmptyStateSubtext = styled.p`
 `;
 
 export function PreviewPanel() {
-  const sections = useSelector(selectSections);
+  const blocks = useSelector(selectBlocks);
 
-  // Combine all sections into a single markdown document
-  const combinedContent =
-    sections.length > 0
-      ? sections
-          .map((section, index) => {
-            const sectionHeader = `\n\n## ${formatSectionType(section.section_type || section.type)}\n\n`;
-            return index === 0
-              ? `## ${formatSectionType(section.section_type || section.type)}\n\n${section.content || ""}`
-              : `${sectionHeader}${section.content || ""}`;
-          })
-          .join("\n\n---\n")
-      : "";
+  // Group blocks by section and combine into a single markdown document
+  const combinedContent = (() => {
+    if (blocks.length === 0) return "";
 
-  if (sections.length === 0) {
+    // Group blocks by parentSectionId
+    const sectionMap = new Map();
+    blocks.forEach(block => {
+      const sectionId = block.parentSectionId;
+      if (!sectionMap.has(sectionId)) {
+        sectionMap.set(sectionId, {
+          type: block.sectionType,
+          blocks: []
+        });
+      }
+      sectionMap.get(sectionId).blocks.push(block);
+    });
+
+    // Build combined content
+    const sectionContents = Array.from(sectionMap.values()).map((section, index) => {
+      // Combine all blocks in this section
+      const sectionContent = section.blocks.map(b => b.content).join("\n\n");
+      const sectionHeader = `## ${formatSectionType(section.type)}`;
+
+      return index === 0
+        ? `${sectionHeader}\n\n${sectionContent}`
+        : `\n\n---\n\n${sectionHeader}\n\n${sectionContent}`;
+    });
+
+    return sectionContents.join("");
+  })();
+
+  if (blocks.length === 0) {
     return (
       <PanelWrapper>
         <EmptyState>

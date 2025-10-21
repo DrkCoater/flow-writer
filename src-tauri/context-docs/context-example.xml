@@ -27,8 +27,6 @@ We aim to **${goal}** by **${deadline}** for **${userName}**.
 - Consolidate context engineering practices into one workspace.
 - Enable per-block AI actions (revise, tone, grammar, query).
 
-<!-- BLOCK_SEPARATOR -->
-
 # Out of Scope (v1)
 - Multi-user real-time collaboration
 - TypeScript types (JavaScript-only project)
