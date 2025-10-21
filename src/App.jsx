@@ -34,6 +34,26 @@ function App() {
     dispatch(loadDocument());
   }, [dispatch]);
 
+  // Initial sync when enabling synchronized scrolling
+  useEffect(() => {
+    if (isSyncScrollEnabled) {
+      const editPanel = editPanelRef.current;
+      const previewPanel = previewPanelRef.current;
+
+      if (editPanel && previewPanel) {
+        // Sync preview panel to match editor panel's current scroll position
+        const { scrollTop, scrollHeight, clientHeight } = editPanel;
+        const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
+
+        const targetScrollHeight = previewPanel.scrollHeight;
+        const targetClientHeight = previewPanel.clientHeight;
+        const targetScrollTop = scrollPercentage * (targetScrollHeight - targetClientHeight);
+
+        previewPanel.scrollTop = targetScrollTop;
+      }
+    }
+  }, [isSyncScrollEnabled]);
+
   // Synchronized scrolling handler
   const handleEditorScroll = () => {
     if (!isSyncScrollEnabled || isSyncingRef.current) return;
