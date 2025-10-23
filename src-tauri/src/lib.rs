@@ -7,7 +7,7 @@ pub mod services;
 pub mod validators;
 
 use models::{MetaData, Section, FlowGraph};
-use services::flow_service;
+use services::{config_service, flow_service};
 
 /// Load all sections from the context document
 #[tauri::command]
@@ -41,15 +41,23 @@ async fn save_document(file_path: String, sections: Vec<Section>) -> Result<(), 
         .map_err(|e| e.to_string())
 }
 
+/// Get the document path using environment variable or return None for file picker
+#[tauri::command]
+async fn get_document_path() -> Result<Option<String>, String> {
+    config_service::get_document_path().await
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             load_sections,
             load_flow_graph,
             load_metadata,
-            save_document
+            save_document,
+            get_document_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

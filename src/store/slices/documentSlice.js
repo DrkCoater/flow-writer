@@ -1,11 +1,35 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-dialog';
 import { sectionsToBlocks, blocksToSections } from '@/utils/sectionTransform';
 
-// Use hardcoded path to source file for development
-// This ensures saves write to the actual source file, not the bundled resources
-// Note: context-docs is at project root, outside src-tauri/ to prevent hot reload on save
-const DEV_FILE_PATH = '/Users/jeremylu/Workspace/AiStuff/katari/flow-writer/context-docs/context-example.xml';
+/**
+ * Helper function to get document path
+ * Priority: ENV variable > file picker dialog
+ */
+async function getDocumentPath() {
+  // Get path from backend (checks ENV variable)
+  let filePath = await invoke('get_document_path');
+
+  // If no path available, show file picker
+  if (!filePath) {
+    filePath = await open({
+      title: 'Select Context Document',
+      multiple: false,
+      filters: [{
+        name: 'XML Files',
+        extensions: ['xml']
+      }]
+    });
+
+    // User cancelled the dialog
+    if (!filePath) {
+      throw new Error('No document selected');
+    }
+  }
+
+  return filePath;
+}
 
 /**
  * Async thunk to load document sections from backend
@@ -14,13 +38,16 @@ export const loadDocument = createAsyncThunk(
   'document/loadDocument',
   async (_, { rejectWithValue }) => {
     try {
-      // Use hardcoded path for development
-      const filePath = DEV_FILE_PATH;
+      // Get document path (ENV > file picker)
+      const filePath = await getDocumentPath();
+
       // Invoke Tauri backend command to load sections
       const sections = await invoke('load_sections', { filePath });
+
       // Transform sections to blocks
       const blocks = sectionsToBlocks(sections);
-      return { sections, blocks };
+
+      return { sections, blocks, filePath };
     } catch (error) {
       return rejectWithValue(error.message || String(error));
     }
@@ -40,8 +67,8 @@ export const saveDocument = createAsyncThunk(
       // Convert blocks back to sections
       const sections = blocksToSections(blocks);
 
-      // Use hardcoded path for development
-      const filePath = DEV_FILE_PATH;
+      // Get document path (same logic as loadDocument)
+      const filePath = await getDocumentPath();
 
       // Invoke Tauri backend command to save sections
       await invoke('save_document', { filePath, sections });
@@ -56,6 +83,7 @@ export const saveDocument = createAsyncThunk(
 const initialState = {
   sections: [],           // Raw sections from XML
   blocks: [],             // Transformed blocks for editing
+  currentFilePath: null,  // Current document file path
   nextId: 1,              // For new block IDs
   focusedBlockId: null,   // Currently focused block
   focusCursorPosition: null,  // Cursor position in focused block
@@ -291,6 +319,7 @@ const documentSlice = createSlice({
         state.loading = false;
         state.sections = action.payload.sections;
         state.blocks = action.payload.blocks;
+        state.currentFilePath = action.payload.filePath;
         // Set nextId based on loaded sections
         state.nextId = action.payload.sections.length + 1;
         state.error = null;
@@ -333,6 +362,7 @@ export const {
 // Selectors
 export const selectSections = (state) => state.document.sections;
 export const selectBlocks = (state) => state.document.blocks;
+export const selectCurrentFilePath = (state) => state.document.currentFilePath;
 export const selectFocusedBlockId = (state) => state.document.focusedBlockId;
 export const selectFocusCursorPosition = (state) => state.document.focusCursorPosition;
 export const selectLoading = (state) => state.document.loading;
